@@ -45,8 +45,11 @@ for isub = 1:length(animals)
             AccMat(1+(2*i),:) = y_BL_acc*100;
             load([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_pertAccuracy.mat']);
             AccMat(2+(2*i),:) = y_Pert_acc*100;
-            i = i +1;
-            
+           
+            AccIsolateMat(1+(2*i),:) = y_BL_acc_isolate*100;
+            AccIsolateMat(2+(2*i),:) = y_Pert_acc_isolate*100;
+          
+             i = i +1;
         end % experiment session
     end % experiment condition
     % MAKE BAR CHART Accuracy
@@ -85,7 +88,10 @@ for isub = 1:length(animals)
     title([ SUB ':Path Length']);
     bar2plot = [mean(A1) mean(A3)];
     bar(bar2plot);
-  
-    
+  % MAKE ACCURACY PERCENTAGE FOR eventual success and failures
+    h = bar(AccIsolateMat);
+    title([ SUB ': Eventual Accuracy']);
+    ylabel('Eventual Success/(eventual + failures)(%)');
+    xticklabels({'Control Baseline';'Control Stim';'Harmaline Baseline';'Harmaline Stim'});
 end
 

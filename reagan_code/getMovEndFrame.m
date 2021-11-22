@@ -32,7 +32,7 @@ function [movEndFrames, score_total_idx] = getMovEndFrame(trialScoreThr,traj, tr
 %   Reagan Bullins 11.12.2021
 %% Input Parser
 p = inputParser;
-addParameter(p,'plotSanity',1,@isnumeric);
+addParameter(p,'plotSanity',0,@isnumeric);
 parse(p,varargin{:});
 plotSanity = p.Results.plotSanity;
 %%

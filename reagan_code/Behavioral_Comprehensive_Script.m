@@ -68,11 +68,14 @@ for isub = 1:length(animals)
             addpath(TRK);
             %% Load Data
             nframes=2500; %variable! %number of frames to analyze. Going to depend on how many frames in movie
-            [traj conf] = get_traj_3D_v2(TRK,CODE_CALIB,nframes);
+            [traj conf] = get_traj_3D_v3(1,TRK,CODE_CALIB,nframes);
             % traj (trials x coordinate xyz x frames); % x is
             % dim1,vertical
             % conf is the confidence value assigned by the classifier
-            
+            [pellet_traj pellet_conf] = get_traj_3D_v3(4,TRK,CODE_CALIB,nframes);
+            ANALYZED_MAT = [BASEPATH 'Data_Analyzed\' SUB '\Behavior\' SCORE '\'];
+            save([ANALYZED_MAT SUB '_' EXPER_SESSION '_' EXPER_COND '_PelletTraj.mat'],'pellet_traj');
+          
             %% Set trials
             % Define Trials by baseline, stim, washout M340_20210811_controlTrials.nbase
             trialIdxs = eval(sprintf('%s_%s_%sTrials',SUB,EXPER_SESSION,EXPER_COND));
@@ -107,9 +110,11 @@ for isub = 1:length(animals)
             numWash.grooming = length(find(trialIdxs.trialScore(wash.trialIdxs) == 'g'));
             %% Plot accuracy for baseline and save mat
             numTotalBL = length(base.trialIdxs);
-            y_BL = [numBL.idealSuccess; numBL.eventualSuccess ;numBL.noSuccess ;numBL.noReach; numBL.grooming]
+            y_BL = [numBL.idealSuccess; numBL.eventualSuccess ;numBL.noSuccess ;numBL.noReach; numBL.grooming];
             y_BL_acc = y_BL./numTotalBL;
-            save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_baselineAccuracy.mat'],'y_BL_acc');
+            y_BL_acc_isolate = numBL.eventualSuccess/(numTotalBL - (numBL.grooming + numBL.noReach + numBL.idealSuccess));
+
+            save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_baselineAccuracy.mat'],'y_BL_acc','y_BL_acc_isolate');
             if plotAccuracy
                 h = bar(y_BL_acc*100,'FaceColor','flat');
                 colorScheme = colorGradient([1,0,.5],[.5,0,1],5);
@@ -128,7 +133,9 @@ for isub = 1:length(animals)
             numTotalPert = length(pert.trialIdxs);
             y_Pert = [numPert.idealSuccess; numPert.eventualSuccess ;numPert.noSuccess ;numPert.noReach; numPert.grooming]
             y_Pert_acc = y_Pert./numTotalPert;
-            save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_pertAccuracy.mat'],'y_Pert_acc');
+            y_Pert_acc_isolate = numPert.eventualSuccess/(numTotalPert - (numPert.grooming + numPert.noReach + numPert.idealSuccess));
+            
+            save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_pertAccuracy.mat'],'y_Pert_acc','y_Pert_acc_isolate');
             if plotAccuracy
                 figure;
                 h = bar(y_Pert_acc*100,'FaceColor','flat');
