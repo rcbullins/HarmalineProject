@@ -9,7 +9,7 @@ plot3DOverlayTrajectories = 0;
 plotAccuracy = 0;
 score = 'all'; %1, 0, 2, -1, 'all'
 %% Add code paths
-USER = 'bullinsr'; %'rcbul';
+USER = 'rcbul'%'bullinsr'; %'rcbul';
 BASEPATH = ['C:/Users/' USER '/OneDrive - University of North Carolina at Chapel Hill/Hantman_Lab/Harmaline_Project/'];
 CODE_REAGAN = [BASEPATH 'Code/reagan_code/'];
 CODE_CALIB = [BASEPATH 'Code/britton_code/calibration_files/camera_calibration_Jay_7-28-16/Calib_Results_stereo.mat'];
