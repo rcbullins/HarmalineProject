@@ -9,7 +9,7 @@ plot3DOverlayTrajectories = 0;
 plotAccuracy = 0;
 score = 'all'; %1, 0, 2, -1, 'all'
 %% Add code paths
-USER = 'bullinsr'; %'rcbul';
+USER = 'rcbul'%'bullinsr'; %'rcbul';
 BASEPATH = ['C:/Users/' USER '/OneDrive - University of North Carolina at Chapel Hill/Hantman_Lab/Harmaline_Project/'];
 CODE_REAGAN = [BASEPATH 'Code/reagan_code/'];
 CODE_CALIB = [BASEPATH 'Code/britton_code/calibration_files/camera_calibration_Jay_7-28-16/Calib_Results_stereo.mat'];
@@ -38,7 +38,7 @@ elseif score == 'all'
     score = [1 0 2];
     SCORE = 'allScores';
 end
-%% For ea
+%% For each subject, go through each experiment, find the movement trajectory
 for isub = 1:length(animals)
     % Find how many sessions for animal in experimental condition of choice
     % (control or harmaline)
@@ -61,7 +61,7 @@ for isub = 1:length(animals)
             % traj (trials x coordinate xyz x frames); % x is
             % dim1,vertical
             % conf is the confidence value assigned by the classifier
-            
+
             %% Set trials
             % Define Trials by baseline, stim, washout M340_20210811_controlTrials.nbase
             trialIdxs = eval(sprintf('%s_%s_%sTrials',SUB,EXPER_SESSION,EXPER_COND));
@@ -134,6 +134,12 @@ for isub = 1:length(animals)
                 title([SUB ' ' EXPER_SESSION ' ' EXPER_COND ' : Stim Accuracy']);
                 %            savefig([BASEPATH 'Figures/' SUB '/Behavior/1DTrajector/' SUB '_' EXPER_SESSION '_' EXPER_COND '_zDim_washout.fig']);
             end
+            %% Plot accuracy of only failed reaches and multiple reaches
+            %Pert
+            numTotalIsolate = length(numPert.eventualSuccess) + length(numPert.noSuccess);
+            y_Pert_isolate = [numPert.eventualSuccess;num.noSuccess];
+            y_BL_acc_isolate = y_Pert_isolate./numTotalIsolate;
+            %Baseline
             %% Plot Trajectory examples
             if plotSampleTrajectories
                 %% Plot Sample 1D Trajectories in Z
@@ -158,7 +164,7 @@ for isub = 1:length(animals)
                 plot1DTrajectories(wash.traj, 'endFrame',nframes,'coordinate_dim',2);
                 sgtitle([SUB ' ' EXPER_COND ': handpaths washout trials YDim']);
                 savefig([BASEPATH 'Figures/' SUB '/Behavior/1DTrajectories/' SUB '_' EXPER_SESSION '_' EXPER_COND '_yDim_washout.fig']);
-                
+
                 %% Plot 3D Trajectories
                 plot3DTrajectories(base.traj, 'endFrame',nframes);
                 sgtitle([SUB ' ' EXPER_COND ': 3D handpaths baseline trials']);
@@ -171,7 +177,7 @@ for isub = 1:length(animals)
                 savefig([BASEPATH 'Figures\' SUB '\Behavior\3DTrajectories\' SUB '_' EXPER_SESSION '_' EXPER_COND '_washout.fig']);
             end
             %% Find start frame of movement
-            
+
             % Only for trials with a score of 1 during baseline and stimulation
             [movStrt.nbase] = getMovStartFrame(score,traj,trialIdxs.trialScore,trialIdxs.nbase);
             [movStrt.npert] = getMovStartFrame(score,traj,trialIdxs.trialScore,trialIdxs.npert);
@@ -188,11 +194,11 @@ for isub = 1:length(animals)
                 plotOverlay1D(movStrt.nbase, movEnd.nbase,movIdx.nbase,traj);
                 title([SUB ' ' EXPER_COND ': Overlay ' SCORE ' baseline Trials (Dim ' num2str(dimPlot) ')']);
                 savefig([BASEPATH 'Figures\' SUB '\Behavior\1DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayReachBaseline_dim' num2str(dimPlot) '.fig']);
-                
+
                 plotOverlay1D(movStrt.npert, movEnd.npert,movIdx.npert,traj);
                 title([SUB ' ' EXPER_COND ': Overlay' SCORE ' stim Trials (Dim ' num2str(dimPlot) ')']);
                 savefig([BASEPATH 'Figures\' SUB '\Behavior\1DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayReachStim_dim' num2str(dimPlot) '.fig']);
-                
+
                 % PRE and POST baseline
                 movStrtBL = [movStrt.nbase movStrt.nwash];
                 movEndBL = [movEnd.nbase movEnd.nwash];
@@ -241,8 +247,8 @@ for isub = 1:length(animals)
                 frameEnd = movEnd.nbase(1,itrial);
                 totalFramesTraj = frameEnd-frameStart;
                 for iframe = 1:totalFramesTraj
-                  iframeTraj = sqrt(sum((traj(movIdx.nbase(itrial),:,frameStart-1+iframe)) .^ 2));
-                  totalLength = totalLength + iframeTraj;
+                    iframeTraj = sqrt(sum((traj(movIdx.nbase(itrial),:,frameStart-1+iframe)) .^ 2));
+                    totalLength = totalLength + iframeTraj;
                 end
                 totalPathLength.nbase(itrial) = totalLength;
             end
@@ -253,8 +259,8 @@ for isub = 1:length(animals)
                 frameEnd = movEnd.npert(1,itrial);
                 totalFramesTraj = frameEnd-frameStart;
                 for iframe = 1:totalFramesTraj
-                  iframeTraj = sqrt(sum((traj(movIdx.npert(itrial),:,frameStart-1+iframe)) .^ 2));
-                  totalLength = totalLength + iframeTraj;
+                    iframeTraj = sqrt(sum((traj(movIdx.npert(itrial),:,frameStart-1+iframe)) .^ 2));
+                    totalLength = totalLength + iframeTraj;
                 end
                 totalPathLength.npert(itrial) = totalLength;
             end
@@ -265,19 +271,17 @@ for isub = 1:length(animals)
                 frameEnd = movEnd.nwash(1,itrial);
                 totalFramesTraj = frameEnd-frameStart;
                 for iframe = 1:totalFramesTraj
-                  iframeTraj = sqrt(sum((traj(movIdx.nwash(itrial),:,frameStart-1+iframe)) .^ 2));
-                  totalLength = totalLength + iframeTraj;
+                    iframeTraj = sqrt(sum((traj(movIdx.nwash(itrial),:,frameStart-1+iframe)) .^ 2));
+                    totalLength = totalLength + iframeTraj;
                 end
                 totalPathLength.nwash(itrial) = totalLength;
-            end  
+            end
             save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_PathLengths.mat'],'totalPathLength');
-            end %session
-        end %exper conditions
-        
-        % fprintf(allBehavFid,'%s,%s,%s,%i,%i,%i,%i,%i\n',SUB,EXPER_SESSION,EXPER_COND,trialIdx,trialScore,startFrame,endFrame,pathLength);
-    end % animal
-    % Compare 3D trajectories, harm vs control
-    Behavioral_Comparison_Conditions;
-    
-    % Compare accuracy across conditions
-    Behavioral_Metrics;
+        end %session
+    end %exper conditions
+  end % animal
+% Compare 3D trajectories, harm vs control
+Behavioral_Comparison_Conditions;
+
+% Compare accuracy across conditions
+Behavioral_Metrics;

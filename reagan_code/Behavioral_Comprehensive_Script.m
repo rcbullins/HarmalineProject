@@ -9,7 +9,7 @@ plot3DOverlayTrajectories = 0;
 plotAccuracy = 0;
 score = 'all'; %1, 0, 2, -1, 'all'
 %% Add code paths
-USER = 'rcbul'%'bullinsr'; %'rcbul';
+USER = 'bullinsr'; %'rcbul';
 BASEPATH = ['C:/Users/' USER '/OneDrive - University of North Carolina at Chapel Hill/Hantman_Lab/Harmaline_Project/'];
 CODE_REAGAN = [BASEPATH 'Code/reagan_code/'];
 CODE_CALIB = [BASEPATH 'Code/britton_code/calibration_files/camera_calibration_Jay_7-28-16/Calib_Results_stereo.mat'];
@@ -134,6 +134,18 @@ for isub = 1:length(animals)
                 title([SUB ' ' EXPER_SESSION ' ' EXPER_COND ' : Stim Accuracy']);
                 %            savefig([BASEPATH 'Figures/' SUB '/Behavior/1DTrajector/' SUB '_' EXPER_SESSION '_' EXPER_COND '_zDim_washout.fig']);
             end
+            %% Plot accuracy of only failed reaches and multiple reaches
+            %Pert
+            numTotalIsolatePert = length(numPert.eventualSuccess) + length(numPert.noSuccess);
+            y_Pert_isolate = [numPert.eventualSuccess;numPert.noSuccess];
+            y_Pert_acc_isolate = y_Pert_isolate./numTotalIsolatePert;
+            save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_pertIsolateAccuracy.mat'],'y_Pert_acc_isolate');
+            %Baseline
+            numTotalIsolateBL = length(numBL.eventualSuccess) + length(numBL.noSuccess);
+            y_BL_isolate = [numBL.eventualSuccess;numBL.noSuccess];
+            y_BL_acc_isolate = y_BL_isolate./numTotalIsolateBL;
+            save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_BLIsolateAccuracy.mat'],'y_BL_acc_isolate');
+           
             %% Plot Trajectory examples
             if plotSampleTrajectories
                 %% Plot Sample 1D Trajectories in Z

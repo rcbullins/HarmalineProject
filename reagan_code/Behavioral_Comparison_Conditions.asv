@@ -118,7 +118,7 @@ for isub = 1:length(animals)
                 %                 hold on;
                 %                 plot3(thisTraj_Smooth(1,end),thisTraj_Smooth(2,end),thisTraj_Smooth(3,end),'o','Color',colorMap(1,:));
                 %             end
-                
+
                 plot3(thisTraj(1,end),thisTraj(2,end),thisTraj(3,end),'o','Color',colorMap(1,:));
                 hold on;
                 plot3(thisPelletTraj(1,end),...round(size(thisPelletTraj,2)/2))
@@ -132,7 +132,7 @@ for isub = 1:length(animals)
             x_val = histogram(x_position,70);
             idx_x = find(x_val.Values == max(x_val.Values));
             if idx_x > 1
-                idx_x = round(mean(idx_x));
+                idx_x = mean(idx_x);
             end
             x_maj = x_val.BinEdges(idx_x);close;
             y_position = squeeze(pellet_traj(movIdx,2,frameStart:frameEnd));figure;
@@ -150,7 +150,6 @@ for isub = 1:length(animals)
             end
             z_maj = z_val.BinEdges(idx_z);close;
             plot3(x_maj, y_maj, z_maj,'o','MarkerFaceColor','k','MarkerEdgeColor','k');
-
         end % session
     end % experimental conditions
     xlabel('X');

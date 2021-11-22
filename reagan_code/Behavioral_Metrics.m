@@ -45,6 +45,9 @@ for isub = 1:length(animals)
             AccMat(1+(2*i),:) = y_BL_acc*100;
             load([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_pertAccuracy.mat']);
             AccMat(2+(2*i),:) = y_Pert_acc*100;
+            %load subset of data accuracy
+            load([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_BLIsolateAccuracy.mat']);
+            load([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_pertIsolateAccuracy.mat']);
 
             AccIsolateMat(1+(2*i),:) = y_BL_acc_isolate*100;
             AccIsolateMat(2+(2*i),:) = y_Pert_acc_isolate*100;
