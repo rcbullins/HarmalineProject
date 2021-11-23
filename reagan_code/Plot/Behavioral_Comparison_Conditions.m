@@ -1,4 +1,4 @@
-function [] = Behavioral_Comparison_Conditions(animals,BASEPATH, exper_conditions,SCORE)
+function [] = Behavioral_Comparison_Conditions(animals,BASEPATH, exper_conditions,SCORE,USER)
 % PURPOSE
 %   Compare 3D trajectories and endpoints for reach and grab movements for
 %   control subjects vs harmaline subjects. Want to see differences/similarities in
@@ -12,6 +12,8 @@ function [] = Behavioral_Comparison_Conditions(animals,BASEPATH, exper_condition
 %       struct with experimental conditions (control or harmaline)
 %   SCORE
 %       string label for what types of trials to look at
+%   USER
+%       directory user name
 % OUTPUTS
 %       3D trajectories (control vs harmaline)
 %       3D endpoints (control vs harmaline)
@@ -23,6 +25,8 @@ function [] = Behavioral_Comparison_Conditions(animals,BASEPATH, exper_condition
 %               - pelletTraj.mat
 % HISTORY
 %   11.23.2021 Reagan Bullins
+%% Run Directory with animal
+Directory_Animals;
 %% 3D Overlays of harmaline vs controls (success trials only)
 % CREATES: Figure with movement trajectories and endpoints labeled with o
 % For each subject, create a figure with both harmaline session and control

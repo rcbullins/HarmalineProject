@@ -1,4 +1,4 @@
-function [] = Behavioral_Metrics(animals,BASEPATH,exper_conditions)
+function [] = Behavioral_Metrics(animals,BASEPATH,exper_conditions, USER)
 % PURPOSE
 %   For the harmaline dataset, compare behavioral metrics accuracy and path
 %   length for control sessions vs harmaline sessions.
@@ -11,6 +11,8 @@ function [] = Behavioral_Metrics(animals,BASEPATH,exper_conditions)
 %       path to harmaline project code folder
 %   exper_conditions
 %       struct with experimental conditions (control or harmaline)
+%   USER
+%       user name in pathway, used in animal directory
 % DEPENDENDECIES
 %   Runs at the end of Behavioral Comprehensive Script
 %       - calls upon 2 mat files created here
@@ -25,6 +27,9 @@ function [] = Behavioral_Metrics(animals,BASEPATH,exper_conditions)
 %   - Makes bar plot and line plot of accuracy over conditions for each
 %     animal
 %   - Makes bar plot for eventual success/ eventual success + failures
+%% Load Directory
+
+Directory_Animals;
 %% Compare accuracy harmaline vs control (baseline vs stim trials)
 % Loop through subjects
 for isub = 1:length(animals)
@@ -95,16 +100,16 @@ for isub = 1:length(animals)
     clear('AccMat');
     %% Plot path length
     figure();
-    A1 =  pathLengthMat{1};
-    A2 =  pathLengthMat{2};
-    A3 =  pathLengthMat{3};
-    A4 =  pathLengthMat{4};
-    G = [ones(size(A1))  2*ones(size(A3)) 3*ones(size(A4)) 4*ones(size(A4))];
-    X = [A1, A2, A3, A4];
-    boxplot(X,G,'notch','on','colors',[0 0 0],'symbol','','labels',{'data1','data2','data3','data4'});
-    title([ SUB ':Path Length']);
-    bar2plot = [mean(A1) mean(A3)];
-    bar(bar2plot);
+%     A1 =  pathLengthMat{1};
+%     A2 =  pathLengthMat{2};
+%     A3 =  pathLengthMat{3};
+%     A4 =  pathLengthMat{4};
+%     G = [ones(size(A1))  2*ones(size(A3)) 3*ones(size(A4)) 4*ones(size(A4))];
+%     X = [A1, A2, A3, A4];
+%     boxplot(X,G,'notch','on','colors',[0 0 0],'symbol','','labels',{'data1','data2','data3','data4'});
+%     title([ SUB ':Path Length']);
+%     bar2plot = [mean(A1) mean(A3)];
+%     bar(bar2plot);
     %% Plot accuracy for eventual success and failures
     bar(AccIsolateMat);
     title([ SUB ': Eventual Accuracy']);

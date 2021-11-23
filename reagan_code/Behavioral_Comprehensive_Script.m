@@ -335,6 +335,6 @@ for isub = 1:length(animals)
     end %experimental conditions
 end % subject
 %% Compare 3D trajectories, harm vs control
-Behavioral_Comparison_Conditions(animals,BASEPATH, exper_conditions,SCORE);
+Behavioral_Comparison_Conditions(animals,BASEPATH, exper_conditions,SCORE,USER);
 %% Compare accuracy across conditions
-Behavioral_Metrics(animals,BASEPATH,exper_conditions);
+Behavioral_Metrics(animals,BASEPATH,exper_conditions,USER);

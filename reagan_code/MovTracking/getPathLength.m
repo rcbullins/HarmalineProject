@@ -14,6 +14,7 @@ function [totalPathLength] = getPathLength(traj, movIdx,movStrt, movEnd)
 %         [totalPathLength.nbase] =
 %         getPathLength(traj, movIdx.nbase,movStrt.nbase, movEnd.nbase)
 %% Get path lengths for defined trials by movIdx
+totalPathLength = zeros(length(movIdx),1);
 for itrial = 1:length(movIdx)
     % Initiate total length variable
     totalLength = 0;
@@ -28,6 +29,6 @@ for itrial = 1:length(movIdx)
         iframeTraj = sqrt(sum((traj(movIdx(itrial),:,frameStart-1+iframe)) .^ 2));
         totalLength = totalLength + iframeTraj;
     end
-    totalPathLength(itrial) = totalLength;
+    totalPathLength(itrial,1) = totalLength;
 end
 end
