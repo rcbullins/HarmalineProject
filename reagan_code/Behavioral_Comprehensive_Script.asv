@@ -322,7 +322,9 @@ for isub = 1:length(animals)
                 title([SUB ' ' EXPER_COND ': Overlay ' SCORE ' pre and post stim']);
                 savefig([BASEPATH 'Figures\' SUB '\Behavior\3DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE 'overlayReachAllBL.fig']);
             end
-            %% Get path length for baseline, stim, and washout trials
+            %% Get path length for baseline t
+            % diff(Traj(start:stop))
+            %   movStrt.nbase, movEnd.nbase,movIdx.nbase,traj
             % Get path lengths for baseline trials
             [totalPathLength.nbase] = getPathLength(traj, movIdx.nbase,movStrt.nbase, movEnd.nbase);
             % Get path lengths for stimulation trials
