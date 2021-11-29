@@ -72,13 +72,14 @@ score = 'all'; % Options: 1, 0, 2, -1, 'all'
                %      (-1) no reach attempts
                %   ('all') all scores where some attempt was made
 %% Add code paths
-USER = 'bullinsr'; %'rcbul';
+USER = 'bullinsr';
+RAWDATA_BASEPATH = 'D:/rbullins/'; % Computer at lab only
 BASEPATH = ['C:/Users/' USER '/OneDrive - University of North Carolina at Chapel Hill/Hantman_Lab/Harmaline_Project/'];
 CODE_REAGAN = [BASEPATH 'Code/reagan_code/'];
-CODE_CALIB = [BASEPATH 'Code/britton_code/calibration_files/camera_calibration_Jay_7-28-16/Calib_Results_stereo.mat'];
-CODE_TRKR = [BASEPATH 'Code/britton_code/tracker'];
-CODE_BRITTON = [BASEPATH 'Code/britton_code/code'];
-CODE_BRITTON_PLOT = [BASEPATH 'Code/britton_code/other_code'];
+CODE_CALIB = [RAWDATA_BASEPATH 'Code/britton_code/calibration_files/camera_calibration_Jay_7-28-16/Calib_Results_stereo.mat'];
+CODE_TRKR = [RAWDATA_BASEPATH 'Code/britton_code/tracker'];
+CODE_BRITTON = [RAWDATA_BASEPATH 'Code/britton_code/code'];
+CODE_BRITTON_PLOT = [RAWDATA_BASEPATH 'Code/britton_code/other_code'];
 addpath(genpath(CODE_REAGAN));
 addpath(CODE_CALIB);
 addpath(CODE_TRKR);
@@ -114,7 +115,7 @@ for isub = 1:length(animals)
         % Find all sessions in this experimental condition for this subject
         ExperSessions = eval(sprintf('%s_%sBehaviorVideos',SUB,EXPER_COND));
         % Add path for where to save figures
-        BEHAV_FIG = [BASEPATH 'Figures\' SUB '\Behavior\'];
+        BEHAV_FIG = [BASEPATH 'Figures/' SUB '/Behavior/'];
         % Loop through each session
         for isession = 1:length(ExperSessions)
             % Identify experimental session (date of experiment)
@@ -125,11 +126,12 @@ for isub = 1:length(animals)
             end
             % Identify path with trk files (estimated position from
             % tracker)
-            TRK = [BASEPATH 'Data/' SUB 'necab1_Chr2/' EXPER_SESSION 'movies/trk'];
+            TRK = [RAWDATA_BASEPATH SUB 'necab1_Chr2/' EXPER_SESSION 'movies/trk'];
             addpath(TRK);
             %% Load position data
             nframes=2500; %variable! %number of frames to analyze. Going to depend on how many frames in movie
             [traj, ~] = get_traj_3D_v2(TRK,CODE_CALIB,nframes);
+            save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_trajectories.mat'],'traj');
             % traj (trials x coordinate xyz x frames);
             % conf is the confidence value assigned by the classifier
             %% Set trials
@@ -251,13 +253,13 @@ for isub = 1:length(animals)
                 %% Plot 3D Trajectories
                 plot3DTrajectories(base.traj, 'endFrame',nframes);
                 sgtitle([SUB ' ' EXPER_COND ': 3D handpaths baseline trials']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\3DTrajectories\' SUB '_' EXPER_SESSION '_' EXPER_COND '_baseline.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/3DTrajectories/' SUB '_' EXPER_SESSION '_' EXPER_COND '_baseline.fig']);
                 plot3DTrajectories(pert.traj, 'endFrame',nframes);
                 sgtitle([SUB ' ' EXPER_COND ': 3D handpaths stimulation trials']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\3DTrajectories\' SUB '_' EXPER_SESSION '_' EXPER_COND '_stim.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/3DTrajectories/' SUB '_' EXPER_SESSION '_' EXPER_COND '_stim.fig']);
                 plot3DTrajectories(wash.traj, 'endFrame',nframes);
                 sgtitle([SUB ' ' EXPER_COND ': 3D handpaths washout trials']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\3DTrajectories\' SUB '_' EXPER_SESSION '_' EXPER_COND '_washout.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/3DTrajectories/' SUB '_' EXPER_SESSION '_' EXPER_COND '_washout.fig']);
             end
             %% Find start frame of movement (uses smoothing and thresholding of velocity)
             % Only for trials with a score of 'score' variable
@@ -278,49 +280,49 @@ for isub = 1:length(animals)
                 % Plot overlay for baseline 
                 plotOverlay1D(movStrt.nbase, movEnd.nbase,movIdx.nbase,traj);
                 title([SUB ' ' EXPER_COND ': Overlay ' SCORE ' baseline Trials (Dim ' num2str(dimPlot) ')']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\1DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayReachBaseline_dim' num2str(dimPlot) '.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/1DTrajectories/' SCORE '/' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayReachBaseline_dim' num2str(dimPlot) '.fig']);
                 % Plot overlay for stimulation
                 plotOverlay1D(movStrt.npert, movEnd.npert,movIdx.npert,traj);
                 title([SUB ' ' EXPER_COND ': Overlay' SCORE ' stim Trials (Dim ' num2str(dimPlot) ')']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\1DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayReachStim_dim' num2str(dimPlot) '.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/1DTrajectories/' SCORE '/' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayReachStim_dim' num2str(dimPlot) '.fig']);
                 % Plot overlay for all baseline, pre and post stimulation
                 movStrtBL = [movStrt.nbase movStrt.nwash];
                 movEndBL = [movEnd.nbase movEnd.nwash];
                 movStrtIdxs = [movIdx.nbase movIdx.nwash]';
                 plotOverlay1D(movStrtBL, movEndBL,movStrtIdxs,traj);
                 title([SUB ' ' EXPER_COND ': Overlay ' SCORE 'pre and post stim (Dim ' num2str(dimPlot) ')']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\1DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayReachAllBL_dim' num2str(dimPlot) '.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/1DTrajectories/' SCORE '/' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayReachAllBL_dim' num2str(dimPlot) '.fig']);
                 %% Plot Overlay 1D - whole movement
                 % Plot baseline 
                 plotOverlay1D(movStrt.nbase, movEnd.nbase,movIdx.nbase, traj,'PlotEntireReach',1);
                 title([SUB ' ' EXPER_COND ': Overlay ' SCORE ' baseline Trials (Dim ' num2str(dimPlot) ')']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\1DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayBaseline_dim' num2str(dimPlot) '.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/1DTrajectories/' SCORE '/' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayBaseline_dim' num2str(dimPlot) '.fig']);
                 % Plot stimulation
                 plotOverlay1D(movStrt.npert, movEnd.npert,movIdx.npert,traj,'PlotEntireReach',1);
                 title([SUB ' ' EXPER_COND ': Overlay ' SCORE ' stim Trials (Dim ' num2str(dimPlot) ')']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\1DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayStim_dim' num2str(dimPlot) '.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/1DTrajectories/' SCORE '/' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayStim_dim' num2str(dimPlot) '.fig']);
                 % Plot all baseline, pre and post stimulation
                 movStrtBL = [movStrt.nbase movStrt.nwash];
                 movEndBL = [movEnd.nbase movEnd.nwash];
                 movStrtIdxs = [movIdx.nbase movIdx.nwash]';
                 plotOverlay1D(movStrtBL, movEndBL,movStrtIdxs,traj,'PlotEntireReach',1);
                 title([SUB ' ' EXPER_COND ': Overlay ' SCORE ' pre and post stim (Dim ' num2str(dimPlot) ')']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\1DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE 'overlayAllBL_dim' num2str(dimPlot) '.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/1DTrajectories/' SCORE '/' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE 'overlayAllBL_dim' num2str(dimPlot) '.fig']);
             end
             %% Plot Overlay 3D - reach movement
-            save([BASEPATH 'Data_Analyzed\' SUB '\Behavior\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_Overlay3DVariables.mat'],'movStrt', 'movEnd','movIdx', 'traj');
+            save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SCORE '/' SUB '_' EXPER_SESSION '_' EXPER_COND '_Overlay3DVariables.mat'],'movStrt', 'movEnd','movIdx', 'traj');
             if plot3DOverlayTrajectories == 1
                 % Plot baseline
                 plotOverlay3D(movStrt.nbase, movEnd.nbase,movIdx.nbase, traj);
                 title([SUB ' ' EXPER_COND ': Overlay ' SCORE ' baseline Trials']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\3DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayReachBaseline.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/3DTrajectories/' SCORE '/' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE '_overlayReachBaseline.fig']);
                 % Plot all baseline, pre and post stimulation
                 movStrtBL = [movStrt.nbase movStrt.nwash];
                 movEndBL = [movEnd.nbase movEnd.nwash];
                 movStrtIdxs = [movIdx.nbase movIdx.nwash]';
                 plotOverlay3D(movStrtBL, movEndBL,movStrtIdxs,traj);
                 title([SUB ' ' EXPER_COND ': Overlay ' SCORE ' pre and post stim']);
-                savefig([BASEPATH 'Figures\' SUB '\Behavior\3DTrajectories\' SCORE '\' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE 'overlayReachAllBL.fig']);
+                savefig([BASEPATH 'Figures/' SUB '/Behavior/3DTrajectories/' SCORE '/' SUB '_' EXPER_SESSION '_' EXPER_COND '_' SCORE 'overlayReachAllBL.fig']);
             end
             %% Get path length for baseline, stim, and washout trials
             % Get path lengths for baseline trials
