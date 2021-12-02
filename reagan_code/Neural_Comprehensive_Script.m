@@ -23,7 +23,7 @@ USER = 'bullinsr'; %'rcbul';
 BASEPATH = ['C:/Users/' USER '/OneDrive - University of North Carolina at Chapel Hill/Hantman_Lab/Harmaline_Project/'];
 RAWDATA_BASEPATH = 'D:/rbullins/';
 CODE_REAGAN = [BASEPATH 'Code/reagan_code/'];
-CODE_BRITTON = [RAWDATA_BASEPATH 'Code/britton_code/code'];
+CODE_BRITTON = [RAWDATA_BASEPATH 'Code/britton_code/code/matlab_britton/'];
 addpath(genpath(CODE_REAGAN));
 addpath(genpath(CODE_BRITTON));
 % Add paths to data inventory script (edit to specify sessions to run over)
@@ -65,6 +65,7 @@ for isub = 1:length(animals)
             if isempty(EXPER_SESSION)
                 continue;
             end
+
             %% data sets and trials where magic happens
             % Set file names and directories.
             RAW_EPHYS_FILE = [RAWDATA_BASEPATH 'Data/' SUB 'necab1_Chr2/' EXPER_SESSION 'ephys/' SUB '_' EXPER_SESSION '_1000_g0/' ...
@@ -116,28 +117,34 @@ for isub = 1:length(animals)
             endFrames = [movEnd.nbase movEnd.npert movEnd.nwash];
             selectIdx = [movIdx.nbase movIdx.npert movIdx.nwash];
             % import ind data
+            if exist([dir_ctx '/../ind.mat']) == 0
+                continue;
+                disp('ind file amiss');
+            end
             ind_ctx = load([dir_ctx '/../ind.mat']);
-            trial_start_timestamps=get_trial_start(ind_ctx,3)/analogSampRate; %sampling frequency is 16.949 %  IN milliseconds
+            trial_start_timestamps=get_trial_start(ind_ctx,3)/analogSampRate; %sampling frequency is 16.949 %  IN seconds!!!
             % Select indexes for interest
             trial_start_timestamps_idxSelect = trial_start_timestamps(selectIdx);
             % Get movement onset time (start)
-            trial_start_mov_timestamps = trial_start_timestamps_idxSelect + (startFrames.*cameraSampRate);
+            trial_start_mov_timestamps = trial_start_timestamps_idxSelect + ((startFrames.*cameraSampRate)/1000); % In seconds
+            trial_start_mov_timestamps = trial_start_mov_timestamps.*1000; % convert to miliseconds
 
             %% Get spikes.
             % Cortical spikes.
             [spk, mua, in] = get_st_ks2(dir_ctx);
             for j = 1:length(spk)
-                st_ctx{j} = double(spk{j})/30; %divide by 30 because neural signals sampled at 30kHz
+                st_ctx{j} = double(spk{j})/30; %divide by 30 because neural signals sampled at 30kHz, no in ms
             end
+
             %% Peri-lift firing rates
             clear mu_ctx std_ctx
 
             % Get cortical firing rates.
-            [rates,t_rates]=convolve_time_stamps(st_ctx,g_fr,rec_length*1000,causal_flag);
+            [rates,t_rates]=convolve_time_stamps(st_ctx,g_fr,rec_length*1000,causal_flag); %in ms
 
             %% cut up time-series into each trial
             r_lift_ctx=[]; %neuron x trial x timepoints
-
+            takeOutIdx = [];
 
             for t=1:length(trial_start_mov_timestamps)
                 wind_min=round(trial_start_mov_timestamps(t)+window_lift(1));
@@ -146,13 +153,15 @@ for isub = 1:length(animals)
                 if wind_min < 0 
                     wind_min = 1;
                     r_lift_ctx(:,t,:) = NaN(size(rates,1),(abs(window_lift(1))+window_lift(2))+1);
+                    takeOutIdx = [takeOutIdx t];
+                    disp('uh oh')
                     continue;
                 end
                 wind_max=round(trial_start_mov_timestamps(t)+window_lift(2));
                 r_lift_ctx(:,t,:)=rates(:,wind_min:wind_max);
             end
             % Take out trials if not enough time points before it
-                %%%%HERE TAKE OUT NAN ROWS%%%%%%%
+                r_lift_ctx(:,takeOutIdx,:) = [];
 
             %% z-score firing rates
             % Get z-scores, WITH SOFT NORMALIZATION?
@@ -172,19 +181,28 @@ for isub = 1:length(animals)
 
 
             %% select trials of interest
+            % Define Trials by baseline, stim, washout
+            trialIdxs = eval(sprintf('%s_%s_%sTrials',SUB,EXPER_SESSION,EXPER_COND));
+            %selectIdx
             % Baseline
-            z_norm_lift_ctx=z_norm_lift_ctx(:,trialIdxs,:);
+            z_norm_lift_ctx=z_norm_lift_ctx(:,:,:); % second dim is index of wanted trials
 
 
             %% plot heatmaps of each trial
-            for n=1:2:10
+        
+            for n = 1:size(z_norm_lift_ctx,1)
                 tmp=squeeze(z_norm_lift_ctx(n,:,:));
-                figure
+                subplot(4,6,n);
                 hold on
                 imagesc(tmp)
-                title(strcat('neuron:',num2str(n)))
+                title(strcat('neuron:',num2str(n)));
+               yline(length(movStrt.nbase)+1,'--w');
+                yline(length(movStrt.nbase)+length(movStrt.npert)+1,'--w');
                 xlabel('Time relative to lift')
+                xticks([0 500 1000 1500 2000 2500]);
+                xticklabels({'-500','0','500','1000','1500','2000','2500'});
             end
+            sgtitle([SUB '_' EXPER_SESSION ': ' EXPER_COND ' session firing rates']);
 
             %% perform PCA analysis
             n_pc=3;
@@ -207,13 +225,13 @@ for isub = 1:length(animals)
             proj_data=PC*z_norm_tavg;
 
 
-            figure
-            hold on
-            plot3(proj_data(1,:),proj_data(2,:),proj_data(3,:))
-            xlabel('PC 1')
-            ylabel('PC 2')
-            zlabel('PC 3')
-
+            figure;
+            hold on;
+            plot3(proj_data(1,:),proj_data(2,:),proj_data(3,:));
+            xlabel('PC 1');
+            ylabel('PC 2');
+            zlabel('PC 3');
+             title([SUB '_' EXPER_SESSION ': ' EXPER_COND ' session']);
             s=diag(s);
             VAR_total=sum(s.^2);
             VAF=s.^2/VAR_total;

@@ -13,11 +13,11 @@ M340_harmBehaviorVideos = {'20210813'};
 M341_harmBehaviorVideos = {'20210819'};
 
 %% Path to excel file info
-m340_excelFile = ['D:\rbullins\Data\M340necab1_Chr2\M340Reachresults.xlsx'];
-m341_excelFile = ['D:\rbullins\Data\M341necab1_Chr2\M341Reachresults.xlsx'];
+m340_excelFile = 'D:\rbullins\Data\M340necab1_Chr2\M340Reachresults.xlsx';
+m341_excelFile = 'D:\rbullins\Data\M341necab1_Chr2\M341Reachresults.xlsx';
 %% Control trials - selected by hand from excel sheets     
 % m340-20210811
-M340_20210811_controlTrials.trialScore = xlsread(m340_excelFile,'B133:EZ133');
+M340_20210811_controlTrials.trialScore =  xlsread(m340_excelFile,'B133:EZ133');
 M340_20210811_controlTrials.nbase = 1:38;
 M340_20210811_controlTrials.npert = [39:81 83:89];
 M340_20210811_controlTrials.nwash = 90:155;

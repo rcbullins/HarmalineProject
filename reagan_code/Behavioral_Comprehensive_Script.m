@@ -78,13 +78,15 @@ BASEPATH = ['C:/Users/' USER '/OneDrive - University of North Carolina at Chapel
 CODE_REAGAN = [BASEPATH 'Code/reagan_code/'];
 CODE_CALIB = [RAWDATA_BASEPATH 'Code/britton_code/calibration_files/camera_calibration_Jay_7-28-16/Calib_Results_stereo.mat'];
 CODE_TRKR = [RAWDATA_BASEPATH 'Code/britton_code/tracker'];
-CODE_BRITTON = [RAWDATA_BASEPATH 'Code/britton_code/code'];
+CODE_BRITTON = [RAWDATA_BASEPATH 'Code/britton_code/code/matlab_britton/'];
 CODE_BRITTON_PLOT = [RAWDATA_BASEPATH 'Code/britton_code/other_code'];
+CODE_PROCESS_EVENTS = [RAWDATA_BASEPATH 'Code/process_events/'];
 addpath(genpath(CODE_REAGAN));
 addpath(CODE_CALIB);
 addpath(CODE_TRKR);
 addpath(genpath(CODE_BRITTON));
 addpath(genpath(CODE_BRITTON_PLOT));
+addpath(genpath(CODE_PROCESS_EVENTS));
 % Add paths to data inventory script (edit to specify sessions to run over)
 Directory_Animals;
 %% Experimental conditions 
@@ -126,12 +128,17 @@ for isub = 1:length(animals)
             end
             % Identify path with trk files (estimated position from
             % tracker)
-            TRK = [RAWDATA_BASEPATH SUB 'necab1_Chr2/' EXPER_SESSION 'movies/trk'];
+            TRK = [RAWDATA_BASEPATH 'Data/' SUB 'necab1_Chr2/' EXPER_SESSION 'movies/trk'];
             addpath(TRK);
             %% Load position data
+             trajFile = ([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_trajectories.mat']);
+            if exist(trajFile,'file')==2
+                load(trajFile);
+            else
             nframes=2500; %variable! %number of frames to analyze. Going to depend on how many frames in movie
             [traj, ~] = get_traj_3D_v2(TRK,CODE_CALIB,nframes);
             save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_trajectories.mat'],'traj');
+            end
             % traj (trials x coordinate xyz x frames);
             % conf is the confidence value assigned by the classifier
             %% Set trials
@@ -337,6 +344,7 @@ for isub = 1:length(animals)
     end %experimental conditions
 end % subject
 %% Compare 3D trajectories, harm vs control
-Behavioral_Comparison_Conditions(animals,BASEPATH, exper_conditions,SCORE,USER);
+Behavioral_Comparison_Conditions; %(animals,BASEPATH, RAWDATA_BASEPATH,exper_conditions,SCORE,USER);
 %% Compare accuracy across conditions
 Behavioral_Metrics(animals,BASEPATH,exper_conditions,USER);
+%% Compare digit spread (pointer and ring) 

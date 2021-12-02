@@ -27,7 +27,7 @@
 %   11.23.2021 Reagan Bullins
 
 %% Variables
-block = 'npert';% 'npert', 'nwash'
+block = 'nbase';% 'npert', 'nwash'
 score = 'all'; % Options: 1, 0, 2, -1, 'all'
                % Code: (1) one grab and success
                %       (0) grab and failure
@@ -269,27 +269,23 @@ for isub = 1:length(animals)
             hold on;
             % find successes and plot mean
             success_idx = find(trialIdxs.trialScore(movIdx) == 1);
-            if success_idx >=1
             plot3(mean(allTrial_End_x(1,success_idx)),...
                 mean(allTrial_End_y(1,success_idx)),...
                 mean(allTrial_End_z(1,success_idx)),...
                 'o','LineWidth',2.0,'Color',colorMapPellet(1,:),'MarkerSize',10);
-            end
             % Find failures and plot mean
             failure_idx = find(trialIdxs.trialScore(movIdx) ~= 1);
-            if failure_idx >=1 
             plot3(mean(allTrial_End_x(1,failure_idx)),...
                 mean(allTrial_End_y(1,failure_idx)),...
                 mean(allTrial_End_z(1,failure_idx)),...
                 'x','LineWidth',2.0,'Color',colorMapPellet(1,:),'MarkerSize',10);
-            end
         end % experimental session
     end % experimental conditions
     xlabel('X');
     ylabel('Y');
     zlabel('Z');
-    title({[SUB ': Harmaline (red) vs Control (blue) ' SCORE ' Reach - Aligned'],['Block: ' block]});
-    savefig([COMPARISON_FIGS SUB '_3DOverlay_' SCORE 'Trials_' block '_Raw_EndpointsAligned.fig']);
+    title({[SUB ': Harmaline (red) vs Control (blue) ' SCORE ' Reach - Aligned'],['Block: ' blo]);
+    savefig([COMPARISON_FIGS SUB '_3DOverlay_' SCORE 'Trials_Raw_EndpointsAligned.fig']);
 end % subjects
 %% PART 2 Aligned Data, Plot endpoints of harmaline(red) vs control(blue) for Success (o) vs failures (x)
 % (failures is anything but ideal success)
@@ -315,9 +311,9 @@ for isub = 1:length(animals)
             load(MAT_FILE,'movIdx','movEnd','movStrt','traj');
             load(MAT_PELLET,'pellet_traj');
 
-            movIdx = eval(sprintf('movIdx.%s',block));
-            movEnd = eval(sprintf('movEnd.%s',block));%movEnd.nbase;
-            movStart = eval(sprintf('movStrt.%s',block));%movStrt.nbase;
+            movIdx = movIdx.nbase;
+            movEnd = movEnd.nbase;
+            movStart = movStrt.nbase;
             movTraj = traj;
             if strcmp(EXPER_COND, 'harm')
                 colorMap = [1 0 0];
@@ -382,8 +378,8 @@ for isub = 1:length(animals)
     xlabel('X');
     ylabel('Y');
     zlabel('Z');
-    title({[SUB ': Harmaline (red) vs Control (blue) ' SCORE ' Reach - Aligned'],['Block: ' block]});
-    savefig([COMPARISON_FIGS SUB '_3DOverlay_' SCORE 'Trials_' block '_Raw_TrajectoriesAligned.fig']);
+    title([SUB ': Harmaline (red) vs Control (blue) ' SCORE ' Reach - Aligned']);
+    savefig([COMPARISON_FIGS SUB '_3DOverlay_' SCORE 'Trials_Raw_TrajectoriesAligned.fig']);
 end % subjects
 
 
