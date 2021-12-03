@@ -118,8 +118,8 @@ for isub = 1:length(animals)
             selectIdx = [movIdx.nbase movIdx.npert movIdx.nwash];
             % import ind data
             if exist([dir_ctx '/../ind.mat']) == 0
+                 disp('ind file amiss');
                 continue;
-                disp('ind file amiss');
             end
             ind_ctx = load([dir_ctx '/../ind.mat']);
             trial_start_timestamps=get_trial_start(ind_ctx,3)/analogSampRate; %sampling frequency is 16.949 %  IN seconds!!!
@@ -130,22 +130,23 @@ for isub = 1:length(animals)
             trial_start_mov_timestamps = trial_start_mov_timestamps.*1000; % convert to miliseconds
 
             %% Get spikes.
-            % Cortical spikes.
+            % Load spikes from kilosort output
             [spk, mua, in] = get_st_ks2(dir_ctx);
             for j = 1:length(spk)
-                st_ctx{j} = double(spk{j})/30; %divide by 30 because neural signals sampled at 30kHz, no in ms
+                spikes{j} = double(spk{j})/30; %divide by 30 because neural signals sampled at 30kHz, no in ms
             end
 
             %% Peri-lift firing rates
             clear mu_ctx std_ctx
-
+            
             % Get cortical firing rates.
-            [rates,t_rates]=convolve_time_stamps(st_ctx,g_fr,rec_length*1000,causal_flag); %in ms
+            [rates,t_rates]=convolve_time_stamps(spikes,g_fr,rec_length*1000,causal_flag); %in ms
 
             %% cut up time-series into each trial
             r_lift_ctx=[]; %neuron x trial x timepoints
             takeOutIdx = [];
-
+            % for each trial, take time before trial start of window 1 and
+            % take samples until window 2
             for t=1:length(trial_start_mov_timestamps)
                 wind_min=round(trial_start_mov_timestamps(t)+window_lift(1));
                 % Want to go back in space, but if trial starts before that
@@ -154,7 +155,7 @@ for isub = 1:length(animals)
                     wind_min = 1;
                     r_lift_ctx(:,t,:) = NaN(size(rates,1),(abs(window_lift(1))+window_lift(2))+1);
                     takeOutIdx = [takeOutIdx t];
-                    disp('uh oh')
+                    disp('taking out trial index ' num2str(t))
                     continue;
                 end
                 wind_max=round(trial_start_mov_timestamps(t)+window_lift(2));
@@ -169,7 +170,7 @@ for isub = 1:length(animals)
             c_softnorm = .5;
             c_soft_z = 5;
             z_norm_lift_ctx=[];
-            for i = 1:size(r_lift_ctx,1)
+            for i = 1:length(spikes)
                 dd = squeeze(r_lift_ctx(i,:,i4z));
                 dd = reshape(dd,1,numel(dd));
                 mu_ctx(i) = nanmean(dd);
@@ -190,7 +191,7 @@ for isub = 1:length(animals)
 
             %% plot heatmaps of each trial
         
-            for n = 1:size(z_norm_lift_ctx,1)
+            for n = 1:length(spikes)
                 tmp=squeeze(z_norm_lift_ctx(n,:,:));
                 subplot(4,6,n);
                 hold on
@@ -235,6 +236,61 @@ for isub = 1:length(animals)
             s=diag(s);
             VAR_total=sum(s.^2);
             VAF=s.^2/VAR_total;
+            %% ISI 
+            figure;
+            for ineuron = 1:length(spikes)
+                thisNeuronSpikes = spikes{ineuron};
+                isi=diff(thisNeuronSpikes');
+                subplot(4,6,ineuron);
+                hist(isi(:),[0:1:2500]);
+                xlim([0 1000]);
+                title(['Neuron ' num2str(ineuron)]);
+            end
+            xlabel('Count');
+            ylabel('ISI (ms)');
+            sgtitle({'Interspike Intervals',[SUB '-' EXPER_SESSION '-' EXPER_COND]});
+            %% Autocorr on spikes
+            bin_sizes = {100,50,30,25};
+            for ibin = 1:length(bin_sizes)
+                figure;
+                this_bin_size = bin_sizes{ibin};
+                for ineuron = 1:length(spikes)
+                    thisNeuronSpikes = spikes{ineuron};
+                    [N_200,X_200] = hist(reshape(thisNeuronSpikes,1,numel(thisNeuronSpikes)),0:this_bin_size:rec_length*1000);
+                    [C,LAGS] = xcov(N_200,'coeff');
+                    subplot(4,6,ineuron)
+                    plot(LAGS*this_bin_size,C);
+                    title(['Neuron ' num2str(ineuron)]);
+                end
+                sgtitle({['Autocorrelograms: Bin Size ' num2str(this_bin_size) 'ms'],[SUB '-' EXPER_SESSION '-' EXPER_COND]});
+            end
+            %% Autocorrelogram on lfp
+%                 [C,LAGS] = xcov(data(1,:),'coeff');
+%                 figure
+%                 subplot(2,1,1)
+%                 plot(LAGS*.004,C)
+%                 xlim([-1 1])
+%                 xlabel('Time Lag (s)')
+%                 title('Channel 1')
+%                 set(gca,'fontsize',32,'fontweight','b')
+%% Power spec on lfp
+%             sampling_frequency=250; % Set Sampling frequency(line 1)
+%             dt=1/sampling_frequency; % Sampling interval (line 2)
+%             rec_time=length(data(1,:))./250; % total recording time (line 3)
+%             freq_dat_1= fft(data(1,:)); %Calculate the Fourier Transform (line 4)
+%             Pow_spec=(2*(dt^2)/rec_time)*abs(freq_dat_1); %Do the calculation for
+%             Pow_spec2=Pow_spec(1:(length(data(1,:))/(2))+1); % Only use the
+%             df=1/max(rec_time); % Frequency resolution (line 7)
+%             fnq= sampling_frequency/2; % Nyquist frequency= half the sampling
+%             frequency. (line 8)
+%             freq_axis=(0:df:fnq); %Gives you the frequency axis. (line 9)
+%             plot(freq_axis,Pow_spec2) % Plot power spectrum (line 10)
+%             xlim([0 80]) % Set x-axis limits (line 11)
+%             xlabel('Frequency Hz') % (line 12)
+%             ylabel ('Power') %(line 13)
+
+
+
         end % experimental session
     end % experimental condition
 end % subject
