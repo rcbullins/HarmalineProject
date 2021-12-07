@@ -1,34 +1,11 @@
 %Behavioral_Tracking_Script
-% PURPOSE
-%   Run this script to prep data directories for JAABA. 
-%   This will find all experimental trk files and make copies of them in a 
-%   directory format that is compatable with JAABA. JAABA requires for 
-%   each trk file to be in a seperate folder. In this folder (each 
-%   experimental trial gets its own folder) is the trk file and movie file.
-%
-%   This script also renames these files to be a general
-%   name as necessary for JAABA. After running this script, you may run
-%   StartJAABA to load your data in the GUI.
+% Run this script to prep JAABA
 % INPUTS
-%   - Change directories in addpaths section
-%   - may need to change trk file directories later in script
-%       - currently assumes trk file is in ....
-%           Sub_ncab1_Chr2/Session_Datemovies/trk/side/
 % OUTPUTS
-%   - Makes copies of raw trk and movie files, renames to general names
-%       apt_tracks.trk and movie.avi, and places them each in their own folder
-%       named the original filename (experimental session, front/side, and trial number) 
 % DEPENDENCIES 
-%   - .trk files output from APT
-%   - corresponding movie .avi files
-%   - tracker .lbl file from APT tracker
-%   - JAABA downloaded for MATLAB (to run after this script)
-%       Download Instructions 
-%           http://jaaba.sourceforge.net/Installation.html#ComputerRequirements 
-%       Will direct to clone JAABA from here 
-%           https://github.com/kristinbranson/JAABA  
-%       Documentation 
-%           http://jaaba.sourceforge.net/  
+%   - need .trk files output from APT
+%   - need corresponding movie .avi files
+%   - need tracker .lbl file from APT tracker
 % HISTORY: Reagan Bullins 12/6/2021
 %% Add paths
 BASEPATH = 'D:/rbullins/'; % Computer at lab only
@@ -62,7 +39,7 @@ for isub = 1:length(animals)
             if isempty(EXPER_SESSION)
                 continue;
             end
-            % Identify path with movie files of trials
+            % Identify path with movie files
             MOVIES = [RAW_DATA SUB 'necab1_Chr2/' EXPER_SESSION 'movies/'];
             % Identify path with trk files (estimated position from
             % tracker)
@@ -70,7 +47,6 @@ for isub = 1:length(animals)
             TRK_SIDE =  [RAW_DATA SUB 'necab1_Chr2/' EXPER_SESSION 'movies/trk/side/'];
             foldContents = dir(TRK_SIDE);
             numTrials = 0;
-            % Find how many trials there are with videos and trk files
             for icont = 1:numel(foldContents)
                 foldEmpt = strfind(foldContents(icont).name,'.trk');
                 if isempty(foldEmpt)
@@ -80,10 +56,9 @@ for isub = 1:length(animals)
                 end
                 numTrials = numTrials + num2add;
             end
-            % for each trial copy video and trk to new folder for both
+            % for each trial copy video and trk to new folder for bothe
             % side and front
             for itrial = 1:numTrials
-                % get trial number in string form
                 if itrial < 10
                     thisTrialNum = ['00' num2str(itrial)];
                 elseif itrial >=10 && itrial < 100
@@ -91,33 +66,35 @@ for isub = 1:length(animals)
                 elseif itrial >= 100
                     thisTrialNum = num2str(itrial);
                 end
-                % Identify movie and trk file locations for this trial
-                % session
                 thisTrial_frontMovie = [MOVIES SUB '_' EXPER_SESSION '_front_v' thisTrialNum '.avi'];
                 thisTrial_sideMovie = [MOVIES SUB '_' EXPER_SESSION '_side_v' thisTrialNum '.avi'];
                 thisTrial_frontTrk = [TRK_FRONT SUB '_' EXPER_SESSION '_front_v' thisTrialNum '.trk'];
                 thisTrial_sideTrk = [TRK_SIDE SUB '_' EXPER_SESSION '_side_v' thisTrialNum '.trk'];
-                % Identify and make folders of where to store the copies
                 front_fold = [JAABA_DATA SUB '_' EXPER_SESSION '_front_v' thisTrialNum '/'];
                 mkdir(front_fold);
                 side_fold = [JAABA_DATA SUB '_' EXPER_SESSION '_side_v' thisTrialNum '/'];
                 mkdir(side_fold);
-                % Make the new movie and trk file name and directories
                 newFront_movie = [JAABA_DATA SUB '_' EXPER_SESSION '_front_v' thisTrialNum '/front/movie.avi'];
                 newSide_movie = [JAABA_DATA SUB '_' EXPER_SESSION '_side_v' thisTrialNum '/side/movie.avi'];
                 newFront_trk = [JAABA_DATA SUB '_' EXPER_SESSION '_front_v' thisTrialNum '/front/apt_tracks.trk'];
                 newSide_trk = [JAABA_DATA SUB '_' EXPER_SESSION '_side_v' thisTrialNum '/side/apt_tracks.trk'];
-                % Copy the files to the new directories with the new name
                 copyfile(thisTrial_frontMovie, newFront_movie);
                 copyfile(thisTrial_frontTrk, newFront_trk);
                 copyfile(thisTrial_sideMovie, newSide_movie);
                 copyfile(thisTrial_sideTrk, newSide_trk);
-            end %trials
+            end
+
         end %experimental session
     end %experimental condition
 end %sub
     
-%% To Run JAABA
-StartJAABA;
+% for each session
+% for each trial
+% make a new folder with movie copy and trk file copy (with basic file names) if folder does not
+% exist
 
+% run JAABA over all folders
+StartJAABA;
+% Select new for a new behavior
+% Select model animal
 

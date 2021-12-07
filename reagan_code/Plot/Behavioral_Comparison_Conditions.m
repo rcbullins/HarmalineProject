@@ -25,6 +25,7 @@
 %               - pelletTraj.mat
 % HISTORY
 %   11.23.2021 Reagan Bullins
+clear;
 
 %% Variables
 block = 'npert';% 'npert', 'nwash'

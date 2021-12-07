@@ -57,7 +57,7 @@
 % HISTORY
 %   11/23/2021 Reagan Bullins
 %% Clean workspace
-clear ALL;
+clear;
 close ALL;
 clc;
 %% Specify what to plot

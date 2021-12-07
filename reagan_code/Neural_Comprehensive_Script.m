@@ -4,11 +4,12 @@
 %   Run Behavioral Comp Script first (need trajectory mat files)
 %   C Drive and google drive have analyzed mat files, code, and figures.
 %   D Drive has raw data, videos, execel sheets of recording information.
+%   SpikeGLX functions, see function DemoReadSGLXData https://billkarsh.github.io/SpikeGLX/
 % OUTPUTS
 % HISTORY
 %   11.23.2021 Reagan: Adapted from Kevin & Britton
 %% Clean workspace
-clear ALL;
+clear;
 close ALL;
 clc;
 %% Specify what to plot
@@ -24,8 +25,10 @@ BASEPATH = ['C:/Users/' USER '/OneDrive - University of North Carolina at Chapel
 RAWDATA_BASEPATH = 'D:/rbullins/';
 CODE_REAGAN = [BASEPATH 'Code/reagan_code/'];
 CODE_BRITTON = [RAWDATA_BASEPATH 'Code/britton_code/code/matlab_britton/'];
+CODE_SPIKE_GLX = [RAWDATA_BASEPATH 'Code/SpikeGLX_Datafile_Tools/'];
 addpath(genpath(CODE_REAGAN));
 addpath(genpath(CODE_BRITTON));
+addpath(genpath(CODE_SPIKE_GLX));
 % Add paths to data inventory script (edit to specify sessions to run over)
 Directory_Animals;
 %% Experimental conditions
@@ -100,6 +103,64 @@ for isub = 1:length(animals)
             analogSampRate = str2double(analogMeta_text(bar_sr+(0:7)));
             % Set camera sampling rate convert number
             cameraSampRate = 2; %(500 Hz)
+            %% Read lfp data
+            lfp_file = [BASEPATH 'Data_Analyzed/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_lfp.mat'];
+            if exist(lfp_file) == 0
+                % Ask user for binary file
+                [EPHYS_PATH, ephys_filename] = fileparts(RAW_EPHYS_FILE);
+                ephys_filename = [ephys_filename '.bin'];
+                % Parse the corresponding metafile
+                meta = ReadMeta(ephys_filename, EPHYS_PATH);
+                % Get all lfp data
+                nSamp = floor(rec_length * SampRate(meta));
+                nSamp_chunk = [1:(60*SampRate(meta)):nSamp];
+                % Make empty matrix to concat all data
+                lfp_all = [];
+                fraction = 0;
+                fractionVec = [0:1/size(nSamp_chunk,2):1];
+                f = waitbar(fractionVec(1),['Loading LFP: ' SUB '-' EXPER_SESSION]);
+                for ichunk = 1:size(nSamp_chunk,2)-1
+                    lfp_chunk_file = [BASEPATH 'Data_Analyzed/' SUB '/Neural/tmp_mat_files/' SUB '_' EXPER_SESSION '_lfpChunk' num2str(ichunk) '.mat'];
+                    if exist(lfp_chunk_file) == 0
+                        %get waitbar while loading lfp
+                        waitbar(fractionVec(ichunk),f,['Loading LFP: ' SUB '-' EXPER_SESSION]);
+                        %chunk data into start and stop sample points
+                        nSamp_start = nSamp_chunk(1,ichunk);
+                        % if on last chunk, go to end
+                        if ichunk == size(nSamp_chunk,2)-1
+                            nSamp_end = nSamp_chunk(1,ichunk+1);
+                        else %if not the end
+                            nSamp_end = nSamp_chunk(1,ichunk+1)-1;
+                        end
+                        % dataArray numChan X samples
+                        lfp_chunk = ReadBin(nSamp_start, nSamp_end, meta, ephys_filename,EPHYS_PATH);
+                        % For an analog channel: gain correct saved channel ch (1-based for MATLAB).
+                        ch = 1;
+                        if strcmp(meta.typeThis, 'imec')
+                            lfp_chunk = GainCorrectIM(lfp_chunk, [ch], meta);
+                        else
+                            lfp_chunk = GainCorrectNI(lfp_chunk, [ch], meta);
+                        end
+                        % downsample lfp from 30000 to 1250
+                        ds_factor = length(lfp_chunk)/30000; % lfp once per second
+                        ds_factor = ds_factor*1250; % lfp 1250 Hz
+                        lfp_downsampled = downsample(lfp_chunk,ds_factor);
+                        save([BASEPATH 'Data_Analyzed/' SUB '/Neural/tmp_mat_files/' SUB '_' EXPER_SESSION '_lfpChunk' num2str(ichunk) '.mat'],'lfp_downsampled');
+                    else
+                        load(lfp_chunk_file);
+                    end
+                    lfp_all = [lfp_all lfp_downsampled];
+                end
+                close(f);
+                %plot(lfp(ch,:));
+                lfp = lfp_all;
+                save([BASEPATH 'Data_Analyzed/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_lfp.mat'],'lfp');
+                % delete the chunk files once all saved
+                for ichunkDel = 1:size(nSamp_chunk,2)-1
+                    delete([BASEPATH 'Data_Analyzed/' SUB '/Neural/tmp_mat_files/' SUB '_' EXPER_SESSION '_lfpChunk' num2str(ichunk) '.mat']);
+                end
+            end
+            %% filter lfp - takeout noise (start saving .lf)
             %% Load event indices from the two recording systems and align to Whisper timebase.
             load([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_trajectories.mat'],'traj');
             % Find start frame of movement (uses smoothing and thresholding of velocity)
@@ -155,7 +216,7 @@ for isub = 1:length(animals)
                     wind_min = 1;
                     r_lift_ctx(:,t,:) = NaN(size(rates,1),(abs(window_lift(1))+window_lift(2))+1);
                     takeOutIdx = [takeOutIdx t];
-                    disp('taking out trial index ' num2str(t))
+                    disp(['taking out trial index ' num2str(t)]);
                     continue;
                 end
                 wind_max=round(trial_start_mov_timestamps(t)+window_lift(2));
