@@ -30,14 +30,12 @@
 %       Documentation 
 %           http://jaaba.sourceforge.net/  
 % HISTORY: Reagan Bullins 12/6/2021
-%% Set and add paths
-BASEPATH = 'D:/rbullins/'; % Drive and user where raw data and code is located
-RAW_DATA = [BASEPATH 'Data/'];% Data location with original files (movies and APT trk files)
-JAABA_DATA =  [BASEPATH 'JAABA_behaviors/'];% NEW path to save copies of files to
-
-JAABA_CODE = [BASEPATH 'Code/JAABA/perframe']; % path of JAABA code cloned from github
+%% Add paths
+BASEPATH = 'D:/rbullins/'; % Computer at lab only
+RAW_DATA = [BASEPATH 'Data/'];
+JAABA_CODE = [BASEPATH 'Code/JAABA/perframe'];
+JAABA_DATA =  [BASEPATH 'JAABA_behaviors/'];
 REAGAN_CODE = 'C:/Users/bullinsr/OneDrive - Univeristy of North Carolina at Chapel Hill/Hantman_Lab/Harmaline_Project/Code/JAABA';
-
 addpath(genpath(JAABA_DATA));
 addpath(JAABA_CODE);
 addpath(genpath(REAGAN_CODE));
