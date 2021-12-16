@@ -1,6 +1,7 @@
 % Neural Comprehensive Script
 % PURPOSE
 % DEPENDENCIES
+%   Run APT > Run Behavioral_Tracking > Run JAABA GUI > Output predictions
 %   Run Behavioral Comp Script first (need trajectory mat files)
 %   C Drive and google drive have analyzed mat files, code, and figures.
 %   D Drive has raw data, videos, execel sheets of recording information.
@@ -23,6 +24,7 @@ score = 'all'; % Options: 1, 0, 2, -1, 'all'
 USER = 'bullinsr'; %'rcbul';
 BASEPATH = ['C:/Users/' USER '/OneDrive - University of North Carolina at Chapel Hill/Hantman_Lab/Harmaline_Project/'];
 RAWDATA_BASEPATH = 'D:/rbullins/';
+JAABA_OUTPUT = [RAWDATA_BASEPATH 'JAABA_behaviors/'];
 CODE_REAGAN = [BASEPATH 'Code/'];
 CODE_BRITTON = [RAWDATA_BASEPATH 'Code/britton_code/code/matlab_britton/'];
 CODE_SPIKE_GLX = [RAWDATA_BASEPATH 'Code/SpikeGLX_Datafile_Tools/'];
@@ -49,7 +51,7 @@ elseif strcmp(scoreLabel, 'all')
 end
 %% For each subject, each condition, each experiment, plot ephys data
 % Loop through subjects
-for isub = 1:length(animals)
+for isub = 1 %:length(animals)
     % Identify subject name
     SUB = animals{isub};
     % Loop through each experimental condition
@@ -68,7 +70,7 @@ for isub = 1:length(animals)
             if isempty(EXPER_SESSION)
                 continue;
             end
-
+            
             %% data sets and trials where magic happens
             % Set file names and directories.
             RAW_EPHYS_FILE = [RAWDATA_BASEPATH 'Data/' SUB 'necab1_Chr2/' EXPER_SESSION 'ephys/' SUB '_' EXPER_SESSION '_1000_g0/' ...
@@ -103,64 +105,77 @@ for isub = 1:length(animals)
             analogSampRate = str2double(analogMeta_text(bar_sr+(0:7)));
             % Set camera sampling rate convert number
             cameraSampRate = 2; %(500 Hz)
+            %% Load classifier data (hand lift, grab, etc)
+            % find how many trials there are
+            TRK_SIDE =  [RAWDATA_BASEPATH SUB 'necab1_Chr2/' EXPER_SESSION 'movies/trk/side/'];
+            foldContents = dir(TRK_SIDE);
+            numTrials = 0;
+            % Find how many trials there are with videos and trk files
+            for icont = 1:numel(foldContents)
+                foldEmpt = strfind(foldContents(icont).name,'.trk');
+                if isempty(foldEmpt)
+                    num2add = 0;
+                else
+                    num2add = 1;
+                end
+                numTrials = numTrials + num2add;
+            end
+            % Initiate cells to store start frames in
+            chew.t0           = {};
+            atMouth.t0        = {};
+            digitsTogether.t0 = {};
+            handLift.t0       = {};
+            supinate.t0       = {};
+            grab.t0           = {};
+            % Initiate cells to store stop frames in
+            chew.t1           = {};
+            atMouth.t1        = {};
+            digitsTogether.t1 = {};
+            handLift.t1       = {};
+            supinate.t1       = {};
+            grab.t1           = {};
+            % load output for all trials and store in mega matrix
+            for itrial = 1:numTrials
+                if itrial < 10
+                    thisTrialNum = ['00' num2str(itrial)];
+                elseif itrial >=10 && itrial < 100
+                    thisTrialNum = ['0' num2str(itrial)];
+                elseif itrial >= 100
+                    thisTrialNum = num2str(itrial);
+                end
+                TRIAL_FOLDER = [JAABA_OUTPUT SUB '_' EXPER_SESSION '_v' thisTrialNum '/'];
+                chew_scores           = load([TRIAL_FOLDER 'scores_Chew.mat'],allScores);
+                atMouth_scores        = load([TRIAL_FOLDER 'scores_AtMouth.mat'],allScores);
+                digitsTogether_scores = load([TRIAL_FOLDER 'scores_DigitsTogether.mat'],allScores);
+                handLift_scores       = load([TRIAL_FOLDER 'scores_LiftHand.mat'],allScores);
+                supinate_scores       = load([TRIAL_FOLDER 'scores_Supinate.mat'],allScores);
+                grab_scores           = load([TRIAL_FOLDER 'scores_Grab.mat'],allScores);
+                % save in mega cell array start times
+                chew.t0s{itrial}           = chew_scores.t0s;
+                atMouth.t0s{itrial}        = atMouth_scores.t0s;
+                digitsTogether.t0s{itrial} = digitsTogether_scores.t0s;
+                handLift.t0s{itrial}       = handLift_scores.t0s;
+                supinate.t0s{itrial}       = supinate_scores.t0s;
+                grab.t0s{itrial}           = grab_scores.t0s;
+                % save in mega cell array stop times
+                chew.t1s{itrial}           = chew_scores.t1s;
+                atMouth.t1s{itrial}        = atMouth_scores.t1s;
+                digitsTogether.t1s{itrial} = digitsTogether_scores.t1s;
+                handLift.t1s{itrial}       = handLift_scores.t1s;
+                supinate.t1s{itrial}       = supinate_scores.t1s;
+                grab.t1s{itrial}           = grab_scores.t1s;
+            end
             %% Read lfp data
             lfp_file = [BASEPATH 'Data_Analyzed/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_lfp.mat'];
-            if exist(lfp_file) == 0
-                % Ask user for binary file
-                [EPHYS_PATH, ephys_filename] = fileparts(RAW_EPHYS_FILE);
-                ephys_filename = [ephys_filename '.bin'];
-                % Parse the corresponding metafile
-                meta = ReadMeta(ephys_filename, EPHYS_PATH);
-                % Get all lfp data
-                nSamp = floor(rec_length * SampRate(meta));
-                nSamp_chunk = [1:(60*SampRate(meta)):nSamp];
-                % Make empty matrix to concat all data
-                lfp_all = [];
-                fraction = 0;
-                fractionVec = [0:1/size(nSamp_chunk,2):1];
-                f = waitbar(fractionVec(1),['Loading LFP: ' SUB '-' EXPER_SESSION]);
-                for ichunk = 1:size(nSamp_chunk,2)-1
-                    lfp_chunk_file = [BASEPATH 'Data_Analyzed/' SUB '/Neural/tmp_mat_files/' SUB '_' EXPER_SESSION '_lfpChunk' num2str(ichunk) '.mat'];
-                    if exist(lfp_chunk_file) == 0
-                        %get waitbar while loading lfp
-                        waitbar(fractionVec(ichunk),f,['Loading LFP: ' SUB '-' EXPER_SESSION]);
-                        %chunk data into start and stop sample points
-                        nSamp_start = nSamp_chunk(1,ichunk);
-                        % if on last chunk, go to end
-                        if ichunk == size(nSamp_chunk,2)-1
-                            nSamp_end = nSamp_chunk(1,ichunk+1);
-                        else %if not the end
-                            nSamp_end = nSamp_chunk(1,ichunk+1)-1;
-                        end
-                        % dataArray numChan X samples
-                        lfp_chunk = ReadBin(nSamp_start, nSamp_end, meta, ephys_filename,EPHYS_PATH);
-                        % For an analog channel: gain correct saved channel ch (1-based for MATLAB).
-                        ch = 1;
-                        if strcmp(meta.typeThis, 'imec')
-                            lfp_chunk = GainCorrectIM(lfp_chunk, [ch], meta);
-                        else
-                            lfp_chunk = GainCorrectNI(lfp_chunk, [ch], meta);
-                        end
-                        % downsample lfp from 30000 to 1250
-                        ds_factor = length(lfp_chunk)/30000; % lfp once per second
-                        ds_factor = ds_factor*1250; % lfp 1250 Hz
-                        lfp_downsampled = downsample(lfp_chunk,ds_factor);
-                        save([BASEPATH 'Data_Analyzed/' SUB '/Neural/tmp_mat_files/' SUB '_' EXPER_SESSION '_lfpChunk' num2str(ichunk) '.mat'],'lfp_downsampled');
-                    else
-                        load(lfp_chunk_file);
-                    end
-                    lfp_all = [lfp_all lfp_downsampled];
-                end
-                close(f);
-                %plot(lfp(ch,:));
-                lfp = lfp_all;
-                save([BASEPATH 'Data_Analyzed/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_lfp.mat'],'lfp');
-                % delete the chunk files once all saved
-                for ichunkDel = 1:size(nSamp_chunk,2)-1
-                    delete([BASEPATH 'Data_Analyzed/' SUB '/Neural/tmp_mat_files/' SUB '_' EXPER_SESSION '_lfpChunk' num2str(ichunk) '.mat']);
-                end
+            if exist(lfp_file)==0
+                lfp = getLFPfromBin(RAW_EPHYS_FILE,BASEPATH, rec_length, SUB, EXPER_SESSION);
+                save([BASEPATH 'Data_Analyzed/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_lfp.mat'],'lfp', '-v7.3');
+            else
+                load(lfp_file,'lfp');
             end
-            %% filter lfp - takeout noise (start saving .lf)
+            %% filter lfp - takeout noise (start saving .lfp)
+            lfp_filtered = lowpass(lfp,80,1250);
+
             %% Load event indices from the two recording systems and align to Whisper timebase.
             load([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_trajectories.mat'],'traj');
             % Find start frame of movement (uses smoothing and thresholding of velocity)
@@ -178,7 +193,7 @@ for isub = 1:length(animals)
             endFrames = [movEnd.nbase movEnd.npert movEnd.nwash];
             selectIdx = [movIdx.nbase movIdx.npert movIdx.nwash];
             % import ind data
-            if exist([dir_ctx '/../ind.mat']) == 0
+            if exist([dir_ctx '/../ind.mat'])==0
                  disp('ind file amiss');
                 continue;
             end
@@ -189,7 +204,6 @@ for isub = 1:length(animals)
             % Get movement onset time (start)
             trial_start_mov_timestamps = trial_start_timestamps_idxSelect + ((startFrames.*cameraSampRate)/1000); % In seconds
             trial_start_mov_timestamps = trial_start_mov_timestamps.*1000; % convert to miliseconds
-
             %% Get spikes.
             % Load spikes from kilosort output
             [spk, mua, in] = get_st_ks2(dir_ctx);
@@ -335,23 +349,21 @@ for isub = 1:length(animals)
 %                 title('Channel 1')
 %                 set(gca,'fontsize',32,'fontweight','b')
 %% Power spec on lfp
-%             data = lfp;
-%             sampling_frequency=1250; % Set Sampling frequency
+            data = lfp_filtered;
+            sampling_frequency=1250; % Set Sampling frequency
 
-%             dt=1/sampling_frequency; % Sampling interval 
-%             rec_time= rec_length;% length(data(1,:))./250; % total recording time 
-%             freq_dat_1= fft(lfp(1,:)); %Calculate the Fourier Transform 
-%             Pow_spec=(2*(dt^2)/rec_time)*abs(freq_dat_1); %Do the calculation for
-%             Pow_spec2=Pow_spec(1:(length(lfp(1,:))/(2))+1); % Only use the
-%             df=1/max(rec_time); % Frequency resolution 
-%             fnq= sampling_frequency/2; % Nyquist frequency= half the sampling frequency. 
-%             freq_axis=(0:df:fnq); %Gives you the frequency axis. 
-%             plot(freq_axis,Pow_spec2) % Plot power spectrum 
-%             xlim([0 80]) % Set x-axis limits 
-%             xlabel('Frequency Hz') 
-%             ylabel ('Power')
-
-
+            dt=1/sampling_frequency; % Sampling interval 
+            rec_time= length(data(1,:))./1250; % total recording time 
+            freq_dat_1= fft(data(1,:)); %Calculate the Fourier Transform 
+            Pow_spec=(2*(dt^2)/rec_time)*abs(freq_dat_1); %Do the calculation for
+            Pow_spec2=Pow_spec(1:(length(data(1,:))/(2))+1); % Only use the
+            df=1/max(rec_time); % Frequency resolution 
+            fnq= sampling_frequency/2; % Nyquist frequency= half the sampling frequency. 
+            freq_axis=(0:df:fnq); %Gives you the frequency axis. 
+            plot(freq_axis,Pow_spec2) % Plot power spectrum 
+            xlim([0 50]) % Set x-axis limits 
+            xlabel('Frequency Hz') 
+            ylabel ('Power')
 
         end % experimental session
     end % experimental condition

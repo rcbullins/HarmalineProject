@@ -1,9 +1,9 @@
 %Behavioral_Tracking_Script
 % PURPOSE
-%   Run this script to prep data directories for JAABA. 
-%   This will find all experimental trk files and make copies of them in a 
-%   directory format that is compatable with JAABA. JAABA requires for 
-%   each trk file to be in a seperate folder. In this folder (each 
+%   Run this script to prep data directories for JAABA.
+%   This will find all experimental trk files and make copies of them in a
+%   directory format that is compatable with JAABA. JAABA requires for
+%   each trk file to be in a seperate folder. In this folder (each
 %   experimental trial gets its own folder) is the trk file and movie file.
 %
 %   This script also renames these files to be a general
@@ -17,18 +17,18 @@
 % OUTPUTS
 %   - Makes copies of raw trk and movie files, renames to general names
 %       apt_tracks.trk and movie.avi, and places them each in their own folder
-%       named the original filename (experimental session, front/side, and trial number) 
-% DEPENDENCIES 
+%       named the original filename (experimental session, front/side, and trial number)
+% DEPENDENCIES
 %   - .trk files output from APT
 %   - corresponding movie .avi files
 %   - tracker .lbl file from APT tracker
 %   - JAABA downloaded for MATLAB (to run after this script)
-%       Download Instructions 
-%           http://jaaba.sourceforge.net/Installation.html#ComputerRequirements 
-%       Will direct to clone JAABA from here 
-%           https://github.com/kristinbranson/JAABA  
-%       Documentation 
-%           http://jaaba.sourceforge.net/  
+%       Download Instructions
+%           http://jaaba.sourceforge.net/Installation.html#ComputerRequirements
+%       Will direct to clone JAABA from here
+%           https://github.com/kristinbranson/JAABA
+%       Documentation
+%           http://jaaba.sourceforge.net/
 % HISTORY: Reagan Bullins 12/6/2021
 %% Set and add paths
 BASEPATH = 'D:/rbullins/'; % Drive and user where raw data and code is located
@@ -44,9 +44,9 @@ addpath(genpath(REAGAN_CODE));
 
 %% Load in experimental information of all experimental sessions
 Directory_Animals;
-%% Experimental conditions 
+%% Experimental conditions
 exper_conditions = {'control';'harm'};
-%% 
+%%
 % Set directory
 % for each animal
 for isub = 1:length(animals)
@@ -103,24 +103,26 @@ for isub = 1:length(animals)
                 thisTrial_sideTrk = [TRK_SIDE SUB '_' EXPER_SESSION '_side_v' thisTrialNum '.trk'];
                 % Identify and make folders of where to store the copies
                 exper_fold = [JAABA_DATA SUB '_' EXPER_SESSION '_v' thisTrialNum '/'];
-                mkdir(exper_fold);
-            
-                % Make the new movie and trk file name and directories
-                newFront_movie = [JAABA_DATA SUB '_' EXPER_SESSION '_v' thisTrialNum '/movie1.avi'];
-                newSide_movie = [JAABA_DATA SUB '_' EXPER_SESSION '_v' thisTrialNum '/movie2.avi'];
-                newFront_trk = [JAABA_DATA SUB '_' EXPER_SESSION '_v' thisTrialNum '/apt_tracks1.trk'];
-                newSide_trk = [JAABA_DATA SUB '_' EXPER_SESSION '_v' thisTrialNum '/apt_tracks2.trk'];
-                % Copy the files to the new directories with the new name
-                copyfile(thisTrial_frontMovie, newFront_movie);
-                copyfile(thisTrial_frontTrk, newFront_trk);
-                copyfile(thisTrial_sideMovie, newSide_movie);
-                copyfile(thisTrial_sideTrk, newSide_trk);
+                if exist(exper_fold) ==0
+                    mkdir(exper_fold);
+
+                    % Make the new movie and trk file name and directories
+                    newFront_movie = [JAABA_DATA SUB '_' EXPER_SESSION '_v' thisTrialNum '/movie1.avi'];
+                    newSide_movie = [JAABA_DATA SUB '_' EXPER_SESSION '_v' thisTrialNum '/movie2.avi'];
+                    newFront_trk = [JAABA_DATA SUB '_' EXPER_SESSION '_v' thisTrialNum '/apt_tracks1.trk'];
+                    newSide_trk = [JAABA_DATA SUB '_' EXPER_SESSION '_v' thisTrialNum '/apt_tracks2.trk'];
+                    % Copy the files to the new directories with the new name
+                    copyfile(thisTrial_frontMovie, newFront_movie);
+                    copyfile(thisTrial_frontTrk, newFront_trk);
+                    copyfile(thisTrial_sideMovie, newSide_movie);
+                    copyfile(thisTrial_sideTrk, newSide_trk);
+                end
             end %trials
         end %experimental session
     end %experimental condition
 end %sub
-    
+
 %% To Run JAABA
-StartJAABA;
+%StartJAABA;
 
 
