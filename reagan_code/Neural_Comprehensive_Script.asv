@@ -13,6 +13,10 @@
 clear;
 close ALL;
 clc;
+%% Run specifics
+useJAABA = 1; %use JAABA output to find lift times (1) or APT thresholding (0)
+runSpikeInfo = 1;
+runLFPInfo = 1;
 %% Specify what to plot
 score = 'all'; % Options: 1, 0, 2, -1, 'all'
 % Code: (1) one grab and success
@@ -107,7 +111,7 @@ for isub = 1 %:length(animals)
             cameraSampRate = 2; %(500 Hz)
             %% Load classifier data (hand lift, grab, etc)
             % find how many trials there are
-            TRK_SIDE =  [RAWDATA_BASEPATH SUB 'necab1_Chr2/' EXPER_SESSION 'movies/trk/side/'];
+            TRK_SIDE =  [RAWDATA_BASEPATH 'Data/' SUB 'necab1_Chr2/' EXPER_SESSION 'movies/trk/side/'];
             foldContents = dir(TRK_SIDE);
             numTrials = 0;
             % Find how many trials there are with videos and trk files
@@ -144,39 +148,50 @@ for isub = 1 %:length(animals)
                     thisTrialNum = num2str(itrial);
                 end
                 TRIAL_FOLDER = [JAABA_OUTPUT SUB '_' EXPER_SESSION '_v' thisTrialNum '/'];
-                chew_scores           = load([TRIAL_FOLDER 'scores_Chew.mat'],allScores);
-                atMouth_scores        = load([TRIAL_FOLDER 'scores_AtMouth.mat'],allScores);
-                digitsTogether_scores = load([TRIAL_FOLDER 'scores_DigitsTogether.mat'],allScores);
-                handLift_scores       = load([TRIAL_FOLDER 'scores_LiftHand.mat'],allScores);
-                supinate_scores       = load([TRIAL_FOLDER 'scores_Supinate.mat'],allScores);
-                grab_scores           = load([TRIAL_FOLDER 'scores_Grab.mat'],allScores);
+                chew_scores           = load([TRIAL_FOLDER 'scores_Chew.mat'],'allScores');
+                atMouth_scores        = load([TRIAL_FOLDER 'scores_AtMouth.mat'],'allScores');
+                digitsTogether_scores = load([TRIAL_FOLDER 'scores_DigitsTogether.mat'],'allScores');
+                handLift_scores       = load([TRIAL_FOLDER 'scores_LiftHand.mat'],'allScores');
+                supinate_scores       = load([TRIAL_FOLDER 'scores_Supinate.mat'],'allScores');
+                grab_scores           = load([TRIAL_FOLDER 'scores_Grab.mat'],'allScores');
                 % save in mega cell array start times
-                chew.t0{itrial}           = chew_scores.t0s;
-                atMouth.t0{itrial}        = atMouth_scores.t0s;
-                digitsTogether.t0{itrial} = digitsTogether_scores.t0s;
-                handLift.t0{itrial}       = handLift_scores.t0s;
-                supinate.t0{itrial}       = supinate_scores.t0s;
-                grab.t0{itrial}           = grab_scores.t0s;
+                chew.t0{itrial}           = chew_scores.allScores.t0s;
+                atMouth.t0{itrial}        = atMouth_scores.allScores.t0s;
+                digitsTogether.t0{itrial} = digitsTogether_scores.allScores.t0s;
+                handLift.t0{itrial}       = handLift_scores.allScores.t0s;
+                supinate.t0{itrial}       = supinate_scores.allScores.t0s;
+                grab.t0{itrial}           = grab_scores.allScores.t0s;
                 % save in mega cell array stop times
-                chew.t1{itrial}           = chew_scores.t0s;
-                atMouth.t0{itrial}        = atMouth_scores.t0s;
-                digitsTogether.t0{itrial} = digitsTogether_scores.t0s;
-                handLift.t0{itrial}       = handLift_scores.t0s;
-                supinate.t0{itrial}       = supinate_scores.t0s;
-                grab.t0{itrial}           = grab_scores.t0s;
+                chew.t1{itrial}           = chew_scores.allScores.t1s;
+                atMouth.t1{itrial}        = atMouth_scores.allScores.t1s;
+                digitsTogether.t1{itrial} = digitsTogether_scores.allScores.t1s;
+                handLift.t1{itrial}       = handLift_scores.allScores.t1s;
+                supinate.t1{itrial}       = supinate_scores.allScores.t1s;
+                grab.t1{itrial}           = grab_scores.allScores.t1s;
             end
             %% Read lfp data
-            lfp_file = [BASEPATH 'Data_Analyzed/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_lfp.mat'];
-            if exist(lfp_file)==0
-                lfp = getLFPfromBin(RAW_EPHYS_FILE,BASEPATH, rec_length, SUB, EXPER_SESSION);
-                save([BASEPATH 'Data_Analyzed/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_lfp.mat'],'lfp', '-v7.3');
-            else
-                load(lfp_file,'lfp');
-            end
-            %% filter lfp - takeout noise (start saving .lfp)
-            lfp_filtered = lowpass(lfp,80,1250);
+%             lfp_file = [BASEPATH 'Data_Analyzed/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_lfp.mat'];
+%             if exist(lfp_file)==0
+%                 lfp = getLFPfromBin(RAW_EPHYS_FILE,BASEPATH, rec_length, SUB, EXPER_SESSION);
+%                 save([BASEPATH 'Data_Analyzed/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_lfp.mat'],'lfp', '-v7.3');
+%             else
+%                 load(lfp_file,'lfp');
+%             end
+%             %% filter lfp - takeout noise
+%             lfp_filtered = lowpass(lfp,80,1250);
 
             %% Load event indices from the two recording systems and align to Whisper timebase.
+
+%                 startFrames = zeros(1,numTrials);
+%                 for itrial = 1:numTrials
+%                    if isempty(handLift.t0{1,itrial}{1,1}) == 0
+%                     startFrames(1,itrial) = handLift.t0{1,itrial}{1,1}(1);
+%                    else
+%                     startFrames(1,itrial) = nan;
+%                    end
+%                 end
+%                 selectIdx = [1:numTrials];
+         
             load([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_trajectories.mat'],'traj');
             % Find start frame of movement (uses smoothing and thresholding of velocity)
             % Only for trials with a score of 'score' variable
@@ -192,6 +207,16 @@ for isub = 1 %:length(animals)
             startFrames = [movStrt.nbase movStrt.npert movStrt.nwash];
             endFrames = [movEnd.nbase movEnd.npert movEnd.nwash];
             selectIdx = [movIdx.nbase movIdx.npert movIdx.nwash];
+            if useJAABA
+            startFrames = zeros(1,length(selectIdx));
+            for itrial = 1:length(selectIdx) %1:numTrials
+               if isempty(handLift.t0{1,selectIdx(itrial)}{1,1}) == 0
+                startFrames(1,itrial) = handLift.t0{1,selectIdx(itrial)}{1,1}(1);
+               else
+                startFrames(1,itrial) = 0;
+               end
+            end
+            end
             % import ind data
             if exist([dir_ctx '/../ind.mat'])==0
                  disp('ind file amiss');
@@ -204,6 +229,7 @@ for isub = 1 %:length(animals)
             % Get movement onset time (start)
             trial_start_mov_timestamps = trial_start_timestamps_idxSelect + ((startFrames.*cameraSampRate)/1000); % In seconds
             trial_start_mov_timestamps = trial_start_mov_timestamps.*1000; % convert to miliseconds
+           if runSpikeInfo
             %% Get spikes.
             % Load spikes from kilosort output
             [spk, mua, in] = get_st_ks2(dir_ctx);
@@ -278,7 +304,7 @@ for isub = 1 %:length(animals)
                 xticks([0 500 1000 1500 2000 2500]);
                 xticklabels({'-500','0','500','1000','1500','2000','2500'});
             end
-            sgtitle([SUB '_' EXPER_SESSION ': ' EXPER_COND ' session firing rates']);
+            sgtitle([SUB ' ' EXPER_SESSION ': ' EXPER_COND ' session firing rates']);
 
             %% perform PCA analysis
             n_pc=3;
@@ -307,7 +333,7 @@ for isub = 1 %:length(animals)
             xlabel('PC 1');
             ylabel('PC 2');
             zlabel('PC 3');
-             title([SUB '_' EXPER_SESSION ': ' EXPER_COND ' session']);
+             title([SUB ' ' EXPER_SESSION ': ' EXPER_COND ' session']);
             s=diag(s);
             VAR_total=sum(s.^2);
             VAF=s.^2/VAR_total;
@@ -339,32 +365,35 @@ for isub = 1 %:length(animals)
                 end
                 sgtitle({['Autocorrelograms: Bin Size ' num2str(this_bin_size) 'ms'],[SUB '-' EXPER_SESSION '-' EXPER_COND]});
             end
-            %% Autocorrelogram on lfp
-%                 [C,LAGS] = xcov(data(1,:),'coeff');
-%                 figure
-%                 subplot(2,1,1)
-%                 plot(LAGS*.004,C)
-%                 xlim([-1 1])
-%                 xlabel('Time Lag (s)')
-%                 title('Channel 1')
-%                 set(gca,'fontsize',32,'fontweight','b')
-%% Power spec on lfp
-            data = lfp_filtered;
-            sampling_frequency=1250; % Set Sampling frequency
+           end
+           if runLFPInfo
+               %% Autocorrelogram on lfp
+               
+               data = lfp_filtered;
+               [C,LAGS] = xcov(data(1,:),'coeff');
+               figure
+               subplot(2,1,1)
+               plot(LAGS*.004,C)
+               xlim([-1 1])
+               xlabel('Time Lag (s)')
+               title('Channel 1')
+               set(gca,'fontsize',32,'fontweight','b')
+               %% Power spec on lfp
+               sampling_frequency=1250; % Set Sampling frequency
 
-            dt=1/sampling_frequency; % Sampling interval 
-            rec_time= length(data(1,:))./1250; % total recording time 
-            freq_dat_1= fft(data(1,:)); %Calculate the Fourier Transform 
-            Pow_spec=(2*(dt^2)/rec_time)*abs(freq_dat_1); %Do the calculation for
-            Pow_spec2=Pow_spec(1:(length(data(1,:))/(2))+1); % Only use the
-            df=1/max(rec_time); % Frequency resolution 
-            fnq= sampling_frequency/2; % Nyquist frequency= half the sampling frequency. 
-            freq_axis=(0:df:fnq); %Gives you the frequency axis. 
-            plot(freq_axis,Pow_spec2) % Plot power spectrum 
-            xlim([0 50]) % Set x-axis limits 
-            xlabel('Frequency Hz') 
-            ylabel ('Power')
-
+               dt=1/sampling_frequency; % Sampling interval
+               rec_time= length(data(1,:))./1250; % total recording time
+               freq_dat_1= fft(data(1,:)); %Calculate the Fourier Transform
+               Pow_spec=(2*(dt^2)/rec_time)*abs(freq_dat_1); %Do the calculation for
+               Pow_spec2=Pow_spec(1:(length(data(1,:))/(2))+1); % Only use the
+               df=1/max(rec_time); % Frequency resolution
+               fnq= sampling_frequency/2; % Nyquist frequency= half the sampling frequency.
+               freq_axis=(0:df:fnq); %Gives you the frequency axis.
+               plot(freq_axis,Pow_spec2) % Plot power spectrum
+               xlim([0 50]) % Set x-axis limits
+               xlabel('Frequency Hz')
+               ylabel ('Power')
+           end
         end % experimental session
     end % experimental condition
 end % subject
