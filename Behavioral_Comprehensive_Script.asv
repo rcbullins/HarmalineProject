@@ -506,16 +506,15 @@ for isub = 1:length(animals)
             for i = 1:length(movIdx.npert)
                 dig1 = trajDig1.npert(i,:,i);
                 dig2 = trajDig2.npert(i,:,i);
-                digitSpread.npert(i) = sqrt(sum((dig1-dig2) .^ 2));
+                trajDigSpread.npert(i) = sqrt(sum((dig1-dig2) .^ 2));
             end
             % wash trial spread
             for i = 1:length(movIdx.nwash)
                 dig1 = trajDig1.nwash(i,:,i);
                 dig2 = trajDig2.nwash(i,:,i);
-                digitSpread.nwash(i) = sqrt(sum((dig1-dig2) .^ 2));
+                trajDigSpread.nwash(i) = sqrt(sum((dig1-dig2) .^ 2));
             end    
-            save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_DigitSpread.mat'],'digitSpread','movIdx','trialIdxs');
-            
+            save([BASEPATH 'Data_Analyzed/' SUB '/Behavior/' SUB '_' EXPER_SESSION '_' EXPER_COND '_DigitSpread.mat'],'y_BL_acc_isolate');
 
         end %session
     end %experimental conditions

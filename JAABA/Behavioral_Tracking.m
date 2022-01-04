@@ -37,7 +37,9 @@ JAABA_DATA =  [BASEPATH 'JAABA_behaviors/'];% NEW path to save copies of files t
 
 JAABA_CODE = [BASEPATH 'Code/JAABA/perframe']; % path of JAABA code cloned from github
 REAGAN_CODE = 'C:/Users/bullinsr/OneDrive - Univeristy of North Carolina at Chapel Hill/Hantman_Lab/Harmaline_Project/Code/JAABA';
+REAGAN_DIRECTORY = 'C:\Users\bullinsr\OneDrive - University of North Carolina at Chapel Hill\Hantman_Lab\Harmaline_Project\Code';
 
+addpath(REAGAN_DIRECTORY);
 addpath(genpath(JAABA_DATA));
 addpath(JAABA_CODE);
 addpath(genpath(REAGAN_CODE));

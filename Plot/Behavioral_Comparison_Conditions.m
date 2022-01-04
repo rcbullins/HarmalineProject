@@ -1,4 +1,4 @@
-%Behavioral_Comparison_Conditions
+% Behavioral_Comparison_Conditions
 % PURPOSE
 %   Compare 3D trajectories and endpoints for reach and grab movements for
 %   control subjects vs harmaline subjects. Want to see differences/similarities in
@@ -26,7 +26,6 @@
 % HISTORY
 %   11.23.2021 Reagan Bullins
 clear;
-
 %% Variables
 block = 'npert';% 'npert', 'nwash'
 score = 'all'; % Options: 1, 0, 2, -1, 'all'

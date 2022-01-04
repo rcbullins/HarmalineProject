@@ -1,4 +1,4 @@
-function [] = Behavioral_Metrics(animals,BASEPATH,exper_conditions, USER)
+function [] = Behavioral_Metrics(animals,BASEPATH,exper_conditions)
 % PURPOSE
 %   For the harmaline dataset, compare behavioral metrics accuracy and path
 %   length for control sessions vs harmaline sessions.
