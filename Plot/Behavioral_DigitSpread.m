@@ -21,6 +21,7 @@ for isub = 1:length(animals)
     % Initiate pathLengthMat to store all path lengths in to bar plot later
     % NOTE: to make bar plots, must have in same struct
     digitSpreadMat = {};
+    digitSpreadSuccess_Scatter = {};
     % Loop through experimental conditions (control vs harmaline)
     for iexper = 1:length(exper_conditions)
         EXPER_COND = exper_conditions{iexper};
@@ -89,16 +90,16 @@ for isub = 1:length(animals)
                                                  std(digSpread_Pert.noReach)/sqrt(length(digSpread_Pert.noReach)); ...
                                                  std(digSpread_Pert.grooming)/sqrt(length(digSpread_Pert.grooming))];
             % Digit Scatter Mat
-            digitSpreadSuccess_Scatter(1+(10*i),:) = digSpread_BL.idealSuccess;
-            digitSpreadSuccess_Scatter(2+(10*i),:) = digSpread_BL.eventualSuccess;
-            digitSpreadSuccess_Scatter(3+(10*i),:) = digSpread_BL.noSuccess;
-            digitSpreadSuccess_Scatter(4+(10*i),:) = digSpread_BL.noReach;
-            digitSpreadSuccess_Scatter(5+(10*i),:) = digSpread_BL.grooming;
-            digitSpreadSuccess_Scatter(6+(10*i),:) = digSpread_Pert.idealSuccess;
-            digitSpreadSuccess_Scatter(7+(10*i),:) = digSpread_Pert.eventualSuccess;
-            digitSpreadSuccess_Scatter(8+(10*i),:) = digSpread_Pert.noSuccess;
-            digitSpreadSuccess_Scatter(9+(10*i),:) = digSpread_Pert.noReach;
-            digitSpreadSuccess_Scatter(10+(10*i),:) = digSpread_Pert.grooming;
+            digitSpreadSuccess_Scatter{1+(10*i)} = digSpread_BL.idealSuccess;
+            digitSpreadSuccess_Scatter{2+(10*i)} = digSpread_BL.eventualSuccess;
+            digitSpreadSuccess_Scatter{3+(10*i)} = digSpread_BL.noSuccess;
+            digitSpreadSuccess_Scatter{4+(10*i)} = digSpread_BL.noReach;
+            digitSpreadSuccess_Scatter{5+(10*i)} = digSpread_BL.grooming;
+            digitSpreadSuccess_Scatter{6+(10*i)} = digSpread_Pert.idealSuccess;
+            digitSpreadSuccess_Scatter{7+(10*i)} = digSpread_Pert.eventualSuccess;
+            digitSpreadSuccess_Scatter{8+(10*i)} = digSpread_Pert.noSuccess;
+            digitSpreadSuccess_Scatter{9+(10*i)} = digSpread_Pert.noReach;
+            digitSpreadSuccess_Scatter{10+(10*i)} = digSpread_Pert.grooming;
             % Add digit distance to struct
             digitSpreadMat{1+(2*i)} = digitSpread.nbase;
             digitSpreadMat{2+(2*i)} = digitSpread.npert;
@@ -150,28 +151,28 @@ for isub = 1:length(animals)
     errorbar(h(1).XEndPoints,digitSpreadSuccess_Mean,digitSpreadSuccess_sem,'k','LineWidth', 1.5,'linestyle','none','HandleVisibility','off');
     % add scatter to bars
     % add control baseline
-    scatter(h(1).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter(1,:))), digitSpreadSuccess_Scatter(1,:),'jitter', 'on', 'jitterAmount', 0.3, 'MarkerFaceColor',h(1).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(2).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter(2,:))), digitSpreadSuccess_Scatter(2,:),'jitter', 'on', 'jitterAmount', 0.3, 'MarkerFaceColor',h(2).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(3).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter(3,:))), digitSpreadSuccess_Scatter(3,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(3).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(4).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter(4,:))), digitSpreadSuccess_Scatter(4,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(4).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(5).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter(5,:))), digitSpreadSuccess_Scatter(5,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(5).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(1).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter{1})), digitSpreadSuccess_Scatter{1},'jitter', 'on', 'jitterAmount', 0.3, 'MarkerFaceColor',h(1).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(2).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter{2})), digitSpreadSuccess_Scatter{2},'jitter', 'on', 'jitterAmount', 0.3, 'MarkerFaceColor',h(2).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(3).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter{3})), digitSpreadSuccess_Scatter{3},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(3).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(4).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter{4})), digitSpreadSuccess_Scatter{4},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(4).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(5).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter{5})), digitSpreadSuccess_Scatter{5},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(5).FaceColor, 'MarkerEdgeColor', 'none');
     % control stim
-    scatter(h(1).XEndPoints(2)*ones(length(digitSpreadSuccess_Scatter(6,:))), digitSpreadSuccess_Scatter(6,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(1).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(2).XEndPoints(2)*ones(length(digitSpreadSuccess_Scatter(7,:))), digitSpreadSuccess_Scatter(7,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(2).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(3).XEndPoints(2)*ones(length(digitSpreadSuccess_Scatter(8,:))), digitSpreadSuccess_Scatter(8,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(3).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(4).XEndPoints(2)*ones(length(digitSpreadSuccess_Scatter(9,:))), digitSpreadSuccess_Scatter(9,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(4).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(5).XEndPoints(2)*ones(length(digitSpreadSuccess_Scatter(10,:))), digitSpreadSuccess_Scatter(10,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(5).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(1).XEndPoints(2)*ones(length(digitSpreadSuccess_Scatter{6})), digitSpreadSuccess_Scatter{6},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(1).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(2).XEndPoints(2)*ones(length(digitSpreadSuccess_Scatter{7})), digitSpreadSuccess_Scatter{7},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(2).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(3).XEndPoints(2)*ones(length(digitSpreadSuccess_Scatter{8})), digitSpreadSuccess_Scatter{8},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(3).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(4).XEndPoints(2)*ones(length(digitSpreadSuccess_Scatter{9})), digitSpreadSuccess_Scatter{9},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(4).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(5).XEndPoints(2)*ones(length(digitSpreadSuccess_Scatter{10})), digitSpreadSuccess_Scatter{10},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(5).FaceColor, 'MarkerEdgeColor', 'none');
     % harm baseline
-    scatter(h(1).XEndPoints(3)*ones(length(digitSpreadSuccess_Scatter(11,:))), digitSpreadSuccess_Scatter(11,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(1).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(2).XEndPoints(3)*ones(length(digitSpreadSuccess_Scatter(12,:))), digitSpreadSuccess_Scatter(12,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(2).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(3).XEndPoints(3)*ones(length(digitSpreadSuccess_Scatter(13,:))), digitSpreadSuccess_Scatter(13,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(3).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(4).XEndPoints(3)*ones(length(digitSpreadSuccess_Scatter(14,:))), digitSpreadSuccess_Scatter(14,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(4).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(5).XEndPoints(3)*ones(length(digitSpreadSuccess_Scatter(15,:))), digitSpreadSuccess_Scatter(15,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(5).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(1).XEndPoints(3)*ones(length(digitSpreadSuccess_Scatter{11})), digitSpreadSuccess_Scatter{11},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(1).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(2).XEndPoints(3)*ones(length(digitSpreadSuccess_Scatter{12})), digitSpreadSuccess_Scatter{12},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(2).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(3).XEndPoints(3)*ones(length(digitSpreadSuccess_Scatter{13})), digitSpreadSuccess_Scatter{13},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(3).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(4).XEndPoints(3)*ones(length(digitSpreadSuccess_Scatter{14})), digitSpreadSuccess_Scatter{14},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(4).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(5).XEndPoints(3)*ones(length(digitSpreadSuccess_Scatter{15})), digitSpreadSuccess_Scatter{15},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(5).FaceColor, 'MarkerEdgeColor', 'none');
     % harm stim
-    scatter(h(1).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter(16,:))), digitSpreadSuccess_Scatter(16,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(1).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(2).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter(17,:))), digitSpreadSuccess_Scatter(17,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(2).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(3).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter(18,:))), digitSpreadSuccess_Scatter(18,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(3).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(4).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter(19,:))), digitSpreadSuccess_Scatter(19,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(4).FaceColor, 'MarkerEdgeColor', 'none');
-    scatter(h(5).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter(20,:))), digitSpreadSuccess_Scatter(20,:),'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(5).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(1).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter{16})), digitSpreadSuccess_Scatter{16},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(1).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(2).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter{17})), digitSpreadSuccess_Scatter{17},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(2).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(3).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter{18})), digitSpreadSuccess_Scatter{18},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(3).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(4).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter{19})), digitSpreadSuccess_Scatter{19},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(4).FaceColor, 'MarkerEdgeColor', 'none');
+    scatter(h(5).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter{20})), digitSpreadSuccess_Scatter{20},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(5).FaceColor, 'MarkerEdgeColor', 'none');
 
 end % subject
