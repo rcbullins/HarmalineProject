@@ -27,7 +27,7 @@
 %   11.23.2021 Reagan Bullins
 clear;
 %% Variables
-block = 'npert';% 'npert', 'nwash'
+block = 'nbase';% 'npert', 'nwash'
 score = 'all'; % Options: 1, 0, 2, -1, 'all'
                % Code: (1) one grab and success
                %       (0) grab and failure
@@ -111,7 +111,7 @@ for isub = 1:length(animals)
                 end
                 % Identify trajectory of movement and pellet
                 thisTraj = squeeze(movTraj(movIdx(itrial),:,frameStart:frameEnd));
-                thisPelletTraj = squeeze(pellet_traj(movIdx(itrial),:,:));
+                thisPelletTraj = squeeze(pellet_traj(movIdx(itrial),:,:)); %3rd was : (1/6/2022)
    
                 %                 thisTraj_Smooth = smoothdata(thisTraj,'gaussian',5);
                 %                 hold on;

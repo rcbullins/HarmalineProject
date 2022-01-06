@@ -115,11 +115,11 @@ elseif strcmp(scoreLabel, 'all')
 end
 %% For each subject, each condition, each experiment, find the movement trajectory
 % Loop through subjects
-for isub = 1:length(animals)
+for isub = 1 %:length(animals)
     % Identify subject name
     SUB = animals{isub};
     % Loop through each experimental condition
-    for iexper = 1:length(exper_conditions)
+    for iexper = 1%:length(exper_conditions)
         % Identify experimental condition
         EXPER_COND = exper_conditions{iexper};
         % Find all sessions in this experimental condition for this subject
@@ -255,6 +255,7 @@ for isub = 1:length(animals)
             %% Plot Trajectory examples (first 16 trials)
             if plotSampleTrajectories == 1
                 %% Plot Sample 1D Trajectories in Z
+                nframes = 2500;
                 % INPUT PARSERS AVAILABLE: coordinate_dim, startFrame, endFrame
                 plot1DTrajectories(base.traj,'endFrame',nframes);
                 sgtitle([SUB ' ' EXPER_COND ': handpaths baseline trials ZDim']);
@@ -363,63 +364,151 @@ for isub = 1:length(animals)
                     supinate.t1{itrial}       = supinate_scores.allScores.t1s;
                     grab.t1{itrial}           = grab_scores.allScores.t1s;
                 end
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % find move start based on hand lift with indexes for each
-                % baseline start frame
+                % BASELINE start frame and end frame
                 movStart.nbase = zeros(1,length(movIdx.nbase));
-                for itrial = 1:length(movIdx.nbase) %1:numTrials
-                    if isempty(handLift.t0{1,movIdx.nbase(itrial)}{1,1}) == 0
-                        movStart.nbase(1,itrial) = handLift.t0{1,movIdx.nbase(itrial)}{1,1}(1);
-                    else
-                        movStart.nbase(1,itrial) = 0;
-                    end
-                end
-                % stimulation start frame
-                movStart.npert = zeros(1,length(movIdx.npert));
-                for itrial = 1:length(movIdx.npert) %1:numTrials
-                    if isempty(handLift.t0{1,movIdx.npert(itrial)}{1,1}) == 0
-                        movStart.npert(1,itrial) = handLift.t0{1,movIdx.npert(itrial)}{1,1}(1);
-                    else
-                        movStart.npert(1,itrial) = 0;
-                    end
-                end
-                % washout start frame
-                movStart.nwash = zeros(1,length(movIdx.nwash));
-                for itrial = 1:length(movIdx.nwash) %1:numTrials
-                    if isempty(handLift.t0{1,movIdx.nwash(itrial)}{1,1}) == 0
-                        movStart.nwash(1,itrial) = handLift.t0{1,movIdx.nwash(itrial)}{1,1}(1);
-                    else
-                        movStart.nwash(1,itrial) = 0;
-                    end
-                end
-                % find end move frame based on grab, with indexes for each
-                % base, pert, and wash
-                % baseline end frame
                 movEnd.nbase = zeros(1,length(movIdx.nbase));
                 for itrial = 1:length(movIdx.nbase) %1:numTrials
+                    % assume start is first hand lift
+                    if isempty(handLift.t0{1,movIdx.nbase(itrial)}{1,1}) == 0
+                        movStart.nbase(1,itrial) = handLift.t0{1,movIdx.nbase(itrial)}{1,1}(1);
+                        noLift.nbase = 0;
+                    else
+                        movStart.nbase(1,itrial) = 0;
+                        noLift.nbase = 1;
+                    end
+                    % assume end is first grab
                     if isempty(grab.t0{1,movIdx.nbase(itrial)}{1,1}) == 0
                         movEnd.nbase(1,itrial) = grab.t0{1,movIdx.nbase(itrial)}{1,1}(1);
+                        noGrab.nbase = 0;
                     else
                         movEnd.nbase(1,itrial) = 0;
+                        noGrab.nbase = 1;
+                    end
+                    % if there is neither lift or grab, move to next trial
+                    if noLift.nbase || noGrab.nbase
+                        continue;
+                    end
+                    % Now lets check to see that grab happens after lift
+                    if movStart.nbase(1,itrial) < movEnd.nbase(1,itrial)
+                        % this is good, let's check there is not a lift
+                        % between this lift and the grab.
+                        liftsBeforeGrab = find(handLift.t0{1,movIdx.nbase(itrial)}{1,1} < movEnd.nbase(1,itrial));
+                        if liftsBeforeGrab > 1
+                            %this means there are more than one lifts
+                            %before the grab, we should choose the one
+                            %closest to the grab
+                            liftClosest2Grab = handLift.t0{1,movIdx.nbase(itrial)}{1,1}(length(liftsBeforeGrab));
+                            movStart.nbase(1,itrial) = liftClosest2Grab;
+                        end % if it is one, then that is the only lift
+                    else % if the grab happens before the lift, this is an early grab. Find the grab after the lift.
+                        % find grab after lift and after digits together
+                        firstGrabAfterLift = find(grab.t0{1,movIdx.nbase(itrial)}{1,1} > handLift.t0{1,movIdx.nbase(itrial)}{1,1}(1));
+
+                        movEnd.nbase(1,itrial) = grab.t0{1,movIdx.nbase(itrial)}{1,1}(firstGrabAfterLift(1));
+
                     end
                 end
-                % stimulation end frame
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                % PERT start frame and end frame
+                movStart.npert = zeros(1,length(movIdx.npert));
                 movEnd.npert = zeros(1,length(movIdx.npert));
                 for itrial = 1:length(movIdx.npert) %1:numTrials
+                    % assume start is first hand lift
+                    if isempty(handLift.t0{1,movIdx.npert(itrial)}{1,1}) == 0
+                        movStart.npert(1,itrial) = handLift.t0{1,movIdx.npert(itrial)}{1,1}(1);
+                        noLift.npert = 0;
+                    else
+                        movStart.npert(1,itrial) = 0;
+                        noLift.npert = 1;
+                    end
+                    % assume end is first grab
                     if isempty(grab.t0{1,movIdx.npert(itrial)}{1,1}) == 0
                         movEnd.npert(1,itrial) = grab.t0{1,movIdx.npert(itrial)}{1,1}(1);
+                        noGrab.npert = 0;
                     else
                         movEnd.npert(1,itrial) = 0;
+                        noGrab.npert = 1;
+                    end
+                    % if there is neither lift or grab, move to next trial
+                    if noLift.npert || noGrab.npert
+                        continue;
+                    end
+                    % Now lets check to see that grab happens after lift
+                    if movStart.npert(1,itrial) < movEnd.npert(1,itrial)
+                        % this is good, let's check there is not a lift
+                        % between this lift and the grab.
+                        liftsBeforeGrab = find(handLift.t0{1,movIdx.npert(itrial)}{1,1} < movEnd.npert(1,itrial));
+                        if liftsBeforeGrab > 1
+                            %this means there are more than one lifts
+                            %before the grab, we should choose the one
+                            %closest to the grab
+                            liftClosest2Grab = handLift.t0{1,movIdx.npert(itrial)}{1,1}(length(liftsBeforeGrab));
+                            movStart.npert(1,itrial) = liftClosest2Grab;
+                        end % if it is one, then that is the only lift
+                    else % if the grab happens before the lift, this is an early grab. Find the grab after the lift.
+                        % find grab after lift and after digits together
+                        firstGrabAfterLift = find(grab.t0{1,movIdx.npert(itrial)}{1,1} > handLift.t0{1,movIdx.npert(itrial)}{1,1}(1));
+
+                        movEnd.npert(1,itrial) = grab.t0{1,movIdx.npert(itrial)}{1,1}(firstGrabAfterLift(1));
                     end
                 end
-                % washout end frame
+                %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                %WASHOUT start frame and end frame
+                movStart.nwash = zeros(1,length(movIdx.nwash));
                 movEnd.nwash = zeros(1,length(movIdx.nwash));
                 for itrial = 1:length(movIdx.nwash) %1:numTrials
+                    % assume start is first hand lift
+                    if isempty(handLift.t0{1,movIdx.nwash(itrial)}{1,1}) == 0
+                        movStart.nwash(1,itrial) = handLift.t0{1,movIdx.nwash(itrial)}{1,1}(1);
+                        noLift.nwash = 0;
+                    else
+                        movStart.nwash(1,itrial) = 0;
+                        noLift.nwash = 1;
+                    end
+                    % assume end is first grab
                     if isempty(grab.t0{1,movIdx.nwash(itrial)}{1,1}) == 0
                         movEnd.nwash(1,itrial) = grab.t0{1,movIdx.nwash(itrial)}{1,1}(1);
+                        noGrab.nwash = 0;
                     else
                         movEnd.nwash(1,itrial) = 0;
+                        noGrab.nwash = 1;
+                    end
+                    % if there is neither lift or grab, move to next trial
+                    if noLift.nwash || noGrab.nwash
+                        continue;
+                    end
+                    % Now lets check to see that grab happens after lift
+                    if movStart.nwash(1,itrial) < movEnd.nwash(1,itrial)
+                        % this is good, let's check there is not a lift
+                        % between this lift and the grab.
+                        liftsBeforeGrab = find(handLift.t0{1,movIdx.nwash(itrial)}{1,1} < movEnd.nwash(1,itrial));
+                        if liftsBeforeGrab > 1
+                            %this means there are more than one lifts
+                            %before the grab, we should choose the one
+                            %closest to the grab
+                            liftClosest2Grab = handLift.t0{1,movIdx.nwash(itrial)}{1,1}(length(liftsBeforeGrab));
+                            movStart.nwash(1,itrial) = liftClosest2Grab;
+                        end % if it is one, then that is the only lift
+                    else % if the grab happens before the lift, this is an early grab. Find the grab after the lift.
+                        % find grab after lift and after digits together
+                        firstGrabAfterLift = find(grab.t0{1,movIdx.nwash(itrial)}{1,1} > handLift.t0{1,movIdx.nwash(itrial)}{1,1}(1));
+                        % if there is not a grab after lift, either animal
+                        % did not finish task or APT did not detect
+                        if isempty(firstGrabAfterLift) == 0 %if there is a grab
+                        movEnd.nwash(1,itrial) = grab.t0{1,movIdx.nwash(itrial)}{1,1}(firstGrabAfterLift(1));
+                        else %if there is no grab after, see if trial is no reach
+                           %if reach or grooming, make both zero and move
+                           %on
+                         %   if trialIdxs.trialScore(base.trialIdxs) == -1
+                         % if not reach or grooming, this is an APT error
+                         % or add in more conditions
+                        end
+
                     end
                 end
+               %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % Label grab start as movEnd
                 grabStart.nbase = movEnd.nbase;
                 grabStart.npert = movEnd.npert;
@@ -523,7 +612,7 @@ end % subject
 %% Compare 3D trajectories, harm vs control
 Behavioral_Comparison_Conditions; %(animals,BASEPATH, RAWDATA_BASEPATH,exper_conditions,SCORE,USER);
 %% Compare accuracy across conditions, harm vs control
-Behavioral_Metrics(animals,BASEPATH,exper_conditions,USER);
+Behavioral_Metrics(animals,BASEPATH,exper_conditions);
 %% Compare digit spread (pointer and ring), harm vs control
 % Calculate distance between digits
 % at grab start using traj
