@@ -135,21 +135,13 @@ for isub = 1:length(animals)
     % harmaline
     compMatBar(:,2) = harm_acc(1,:);
 
-    h = bar(compMatBar) %, 'FaceColor','flat');
+    h = bar(compMatBar, 'FaceColor','flat');
     hold on;
-%     h(1).CData(1,:) = [0 0 1];
-%     h(1).CData(2,:) = [0 0 1];
-%     h(1).CData(3,:) = [0 0 1];
-%     h(1).CData(4,:) = [0 0 1];
-%     h(2).CData(1,:) = [1 0 0];
-%     h(2).CData(2,:) = [1 0 0];
-%     h(2).CData(3,:) = [1 0 0];
-%     h(2).CData(4,:) = [1 0 0];    
-%     h(1).FaceAlpha = .6;
-%     h(2).FaceAlpha = .6;
-%              
-%                 l = cell(1,2);
-%                 l{1}='Control'; l{2}='Harmaline';
+              
+                h.CData(1,:) = [0 0 1];
+                h.CData(2:2:8,:) = [1 0 0];
+                l = cell(1,2);
+                l{1}='Control'; l{2}='Harmaline';
     title([ SUB ': Accuracy']);
     xticklabels({'First Reach Success';'Eventual Success';'No Success';'No Reach'});
     legend('Control','Harmaline');

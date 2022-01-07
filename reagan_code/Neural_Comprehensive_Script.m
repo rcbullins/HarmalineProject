@@ -15,8 +15,8 @@ close ALL;
 clc;
 %% Run specifics
 useJAABA = 1; %use JAABA output to find lift times (1) or APT thresholding (0)
-runSpikeInfo = 1;
-runLFPInfo = 0;
+runSpikeInfo = 0;
+runLFPInfo =1;
 %% Specify what to plot
 score = 'all'; % Options: 1, 0, 2, -1, 'all'
 % Code: (1) one grab and success
@@ -62,7 +62,7 @@ end
 SetGraphDefaults;
 %% For each subject, each condition, each experiment, plot ephys data
 % Loop through subjects
-for isub = 1 %:length(animals)
+for isub = 2:length(animals)
     % Identify subject name
     SUB = animals{isub};
     % Loop through each experimental condition
