@@ -117,7 +117,7 @@ for isub = 1:length(animals)
     title([ SUB ': Eventual Accuracy']);
     ylabel('Eventual Success/(eventual + failures)(%)');
     xticklabels({'Control Baseline';'Control Stim';'Harmaline Baseline';'Harmaline Stim'});
-    %% Updated Plot (Baseline:Control vs Harmaline) (exclude grooming from accuracy?)
+    %% Updated Plot (Baseline:Control vs Harmaline) 
     % x axis is Eventual Success, no Reach, etc
     % Define control
     control_acc = AccMat(1,1:4);
@@ -134,7 +134,7 @@ for isub = 1:length(animals)
     compMatBar(:,1) = control_acc(1,:);
     % harmaline
     compMatBar(:,2) = harm_acc(1,:);
-
+   figure;
     h = bar(compMatBar) %, 'FaceColor','flat');
     hold on;
 %     h(1).CData(1,:) = [0 0 1];
@@ -150,12 +150,33 @@ for isub = 1:length(animals)
 %              
 %                 l = cell(1,2);
 %                 l{1}='Control'; l{2}='Harmaline';
-    title([ SUB ': Accuracy']);
+if strcmp(SUB,'M340')
+    title('Reaching during harmaline (10mg/kg)');
+elseif strcmp(SUB,'M341')
+    title('Reaching during harmaline (20mg/kg)');
+end
+ylim([0 100]);
     xticklabels({'First Reach Success';'Eventual Success';'No Success';'No Reach'});
     legend('Control','Harmaline');
+     ylabel('Accuracy (%)');
     clear('AccMat');
-
-
+%% Updated plot 2 (no success not included: first reach vs eventual vs no reach)
+% Take out no success bar 
+    % Control and harmaline
+    figure;
+    compMatBar(3,:) = [];
+    h = bar(compMatBar) %, 'FaceColor','flat');
+    hold on;
+if strcmp(SUB,'M340')
+    title('Reaching during harmaline (10mg/kg)');
+elseif strcmp(SUB,'M341')
+    title('Reaching during harmaline (20mg/kg)');
+end
+ylim([0 100]);
+    xticklabels({'First Reach Success';'Eventual Success';'No Reach'});
+    legend('Control','Harmaline');
+     ylabel('Accuracy (%)');
+clear('compMatBar');
 end % subject
 end
 

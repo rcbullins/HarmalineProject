@@ -8,7 +8,6 @@ RAWDATA_BASEPATH = 'D:/rbullins/'; % Computer at lab only
 BASEPATH = ['C:/Users/' USER '/OneDrive - University of North Carolina at Chapel Hill/Hantman_Lab/Harmaline_Project/'];
 
 Directory_Animals;
-SetGraphDefaults;
 %% Compare digit spread harmaline vs control (baseline vs stim trials)
 % Loop through subjects
 for isub = 1:length(animals)
@@ -139,32 +138,6 @@ for isub = 1:length(animals)
     x =[];
     errorbar(x',digSpread_mean,digSpread_sem,'k','LineWidth', 1.5,'linestyle','none','HandleVisibility','off');
     ylabel('Digit Spread (pixels)');
-    %% Same figure - simplified with only basline, no stimulation
-    % digit spread mean
-    digSpread_mean_simp(1,1) = mean(digitSpreadMat{1});
-    digSpread_mean_simp(1,2) = mean(digitSpreadMat{3});
-    % digit spread sem
-    digSpread_sem_simp(1,1) = std(digitSpreadMat{1}) / sqrt(length(digitSpreadMat{1}));
-    digSpread_sem_simp(1,2) = std(digitSpreadMat{3}) / sqrt(length(digitSpreadMat{3}));
-    % make the figure
-    figure;
-    h = bar(digSpread_mean_simp,'facealpha',.4, 'edgecolor', 'none', 'FaceColor','flat');
-    hold on;
-    h.CData(1,:) = [0 .5 1]; %blue (baseline)
-    h.CData(2,:) = [1 0 0];  %red (harmaline)
-
-    % Add data point for each participant
-    scatter(1*ones(1,length(digitSpreadMat{1})), digitSpreadMat{1}, 'jitter', 'on', 'jitterAmount', 0.3, 'MarkerFaceColor', [0 .5 1], 'MarkerEdgeColor', 'none');
-    scatter(2*ones(1,length(digitSpreadMat{3})), digitSpreadMat{3}, 'jitter', 'on', 'jitterAmount', 0.3, 'MarkerFaceColor', 'r', 'MarkerEdgeColor', 'none');
-     % finish labeling
-    xticklabels({'Control Baseline';'Harmaline Baseline'});
-    title([ SUB ': Digit Spread at Grab']);
-    x =[];
-    errorbar(x',digSpread_mean_simp,digSpread_sem_simp,'k','LineWidth', 1.5,'linestyle','none','HandleVisibility','off');
-    ylabel('Digit Spread (pixels)');
-
-    box off;
-  
     %% Figure two: fig one in more detail - with success level too
     % get breakdown of accuracy
     figure;
@@ -173,8 +146,8 @@ for isub = 1:length(animals)
     title([ SUB ': Digit Spread at Grab']);
     xticklabels({'Control Baseline';'Control Stim';'Harmaline Baseline';'Harmaline Stim'});
     l = cell(1,5);
-    l{1}='Success'; l{2}='Eventual Success'; l{3}='No Success'; l{4}='No Reach';
-    legend(h,l(1:4));
+    l{1}='Success'; l{2}='Eventual Success'; l{3}='No Success'; l{4}='No Reach'; l{5}='Grooming';
+    legend(h,l);
     % Example data  
 % Calculate the number of groups and number of bars in each group
 [ngroups,nbars] = size(digitSpreadSuccess_Mean);
@@ -185,9 +158,7 @@ for i = 1:nbars
 end
 % Plot the errorbars
 errorbar(x',digitSpreadSuccess_Mean,digitSpreadSuccess_sem,'k','linestyle','none');
-  legend(h,l(1:4));
-  box off;
-  legend box off;
+
      % add scatter to bars
     % add control baseline
     scatter(h(1).XEndPoints(1)*ones(length(digitSpreadSuccess_Scatter{1})), digitSpreadSuccess_Scatter{1},'jitter', 'on', 'jitterAmount', 0.3, 'MarkerFaceColor',h(1).FaceColor, 'MarkerEdgeColor', 'none');
@@ -214,31 +185,4 @@ errorbar(x',digitSpreadSuccess_Mean,digitSpreadSuccess_sem,'k','linestyle','none
     scatter(h(4).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter{19})), digitSpreadSuccess_Scatter{19},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(4).FaceColor, 'MarkerEdgeColor', 'none');
     scatter(h(5).XEndPoints(4)*ones(length(digitSpreadSuccess_Scatter{20})), digitSpreadSuccess_Scatter{20},'jitter', 'on', 'jitterAmount', 0.3,'MarkerFaceColor', h(5).FaceColor, 'MarkerEdgeColor', 'none');
  legend(h,l);
- %% Same figure with only baseline, no stimulation trials;
-  figure;
-  digitSpreadSuccess_Mean_Simplified(1,:) = digitSpreadSuccess_Mean(1,:);
-  digitSpreadSuccess_Mean_Simplified(2,:) = digitSpreadSuccess_Mean(3,:);
-  digitSpreadSuccess_sem_Simplified(1,:) = digitSpreadSuccess_sem(1,:);
-  digitSpreadSuccess_sem_Simplified(2,:) = digitSpreadSuccess_sem(3,:);
-    h = bar(digitSpreadSuccess_Mean_Simplified,'grouped');
-    hold on;
-    title([ SUB ': Digit Spread at Grab']);
-    xticklabels({'Control Baseline';'Harmaline Baseline'});
-    l = cell(1,5);
-    l{1}='Success'; l{2}='Eventual Success'; l{3}='No Success'%; l{4}='No Reach';
-    legend(h,l(1:3));
-    % Example data  
-% Calculate the number of groups and number of bars in each group
-[ngroups,nbars] = size(digitSpreadSuccess_Mean_Simplified);
-% Get the x coordinate of the bars
-x = nan(nbars, ngroups);
-for i = 1:nbars
-    x(i,:) = h(i).XEndPoints;
-end
-% Plot the errorbars
-errorbar(x',digitSpreadSuccess_Mean_Simplified,digitSpreadSuccess_sem_Simplified,'k','linestyle','none');
-  legend(h,l(1:4));
-  box off;
-  legend box off;
-  
 end % subject
