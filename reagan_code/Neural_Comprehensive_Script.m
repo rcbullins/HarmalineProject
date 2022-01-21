@@ -1,5 +1,8 @@
 % Neural Comprehensive Script
 % PURPOSE
+%   Look at unit activity and lfp activity around certain behaviors, find
+%   differences between control and harmaline neural activity.
+%   Will analyze all sessions specified in Directory_Animals Script.
 % DEPENDENCIES
 %   Run APT > Run Behavioral_Tracking > Run JAABA GUI > Output predictions
 %   Run Behavioral Comp Script first (need trajectory mat files)
@@ -7,6 +10,9 @@
 %   D Drive has raw data, videos, execel sheets of recording information.
 %   SpikeGLX functions, see function DemoReadSGLXData https://billkarsh.github.io/SpikeGLX/
 % OUTPUTS
+%   See run specifics section below for choices. Can look at inidivudal
+%   neuron characteristics, group characteristics, lfp, firing rate,
+%   interspike intervals, etc
 % HISTORY
 %   11.23.2021 Reagan: Some sections adapted from Kevin & Britton
 %% Clean workspace
@@ -14,26 +20,19 @@ clear;
 close ALL;
 clc;
 %% Run specifics
-useJAABA     = 0; %use JAABA output to find lift times (1) or APT thresholding (0)
+useJAABA     = 1; %use JAABA output (1) or APT thresholding (0) NOTE: Old JAABA way - recode for Jay's way of doing JAABA
 runSpikeInfo = 0;
-runLFPInfo   = 1;
-runHeatMaps  = 0;
+runLFPInfo   = 0;
+runHeatMaps  = 1;
 runPCA       = 0;
 runDecoder   = 0;
-runISI       = 0;
+runISI       =0;
 runAutoCorr  = 0;
-%% Specify what to plot
-score = 'all'; % Options: 1, 0, 2, -1, 'all'
-% Code: (1) one grab and success
-%       (0) grab and failure
-%       (2) multiple reaches and eventual success
-%      (-1) no reach attempts
-%   ('all') all scores where some attempt was made
 %% Add code paths
 USER = 'bullinsr'; %'rcbul';
 BASEPATH = ['C:/Users/' USER '/OneDrive - University of North Carolina at Chapel Hill/Hantman_Lab/Harmaline_Project/'];
 RAWDATA_BASEPATH = 'D:/rbullins/';
-JAABA_OUTPUT = [RAWDATA_BASEPATH 'JAABA_behaviors/'];
+JAABA_OUTPUT = [RAWDATA_BASEPATH 'JAABA_behaviors_old/'];
 CODE_REAGAN = [BASEPATH 'Code/'];
 CODE_BRITTON = [RAWDATA_BASEPATH 'Code/britton_code/code/matlab_britton/'];
 CODE_SPIKE_GLX = [RAWDATA_BASEPATH 'Code/SpikeGLX_Datafile_Tools/'];
@@ -53,30 +52,16 @@ exper_conditions = {'control';'harm'};
 colorMap(1,:) =[70/255 130/255 180/255];
 colorMap(2,:) = [178/255 34/255 34/255];
 %% Classifiers
-classifiers = {'handLift', 'digitsTogether', 'grab', 'supinate','atMouth'};
-%% Score
-scoreLabel = num2str(score);
-if strcmp(scoreLabel, '1')
-    SCORE = 'idealSuccess';
-elseif strcmp(scoreLabel, '0')
-    SCORE = 'noSuccess';
-elseif strcmp(scoreLabel, '-1')
-    SCORE = 'noReach';
-elseif strcmp(scoreLabel, '2')
-    SCORE = 'eventualSuccess';
-elseif strcmp(scoreLabel, 'all')
-    score = [1 0 2];
-    SCORE = 'allScores';
-end
+classifiers = {'grab',...
+    'handLift', 'digitsTogether', 'supinate','atMouth'};
 %% Set Graph Defaults - I like arial font :)
 SetGraphDefaults;
 %% For each subject, each condition, each experiment, plot ephys data
 % Loop through subjects
-for isub = 1%:length(animals)
+for isub = 1:length(animals)
     % Identify subject name
     SUB = animals{isub};
     % Loop through each experimental condition
-
     for iexper = 1:length(exper_conditions)
         % Identify experimental condition
         EXPER_COND = exper_conditions{iexper};
@@ -92,7 +77,6 @@ for isub = 1%:length(animals)
             if isempty(EXPER_SESSION)
                 continue;
             end
-
             %% data sets and trials where magic happens
             % Set file names and directories.
             RAW_EPHYS_FILE = [RAWDATA_BASEPATH 'Data/' SUB 'necab1_Chr2/' EXPER_SESSION 'ephys/' SUB '_' EXPER_SESSION '_1000_g0/' ...
@@ -101,7 +85,7 @@ for isub = 1%:length(animals)
                 SUB '_' EXPER_SESSION '_1000_g0_t0.nidq.meta'];
             RAW_IND_BIN = [RAWDATA_BASEPATH 'Data/' SUB 'necab1_Chr2/' EXPER_SESSION 'ephys/' SUB '_' EXPER_SESSION '_1000_g0/'...
                 SUB '_' EXPER_SESSION '_1000_g0_t0.nidq.bin'];
-            if strcmp(EXPER_SESSION,'20210819')
+            if strcmp(EXPER_SESSION,'20210819') %hardcoded - this session is a weird one
                 RAW_ANALOG_FILE = 'D:/rbullins/Data/M341necab1_Chr2/20210819ephys/M341_20210819_1100_g0/M341_20210819_1100_g0_t0.nidq.meta';
                 RAW_EPHYS_FILE = 'D:/rbullins/Data/M341necab1_Chr2/20210819ephys/M341_20210819_1100_g0/M341_20210819_1100_g0_imec0/M341_20210819_1100_g0_t0.imec0.ap.bin';
                 RAW_IND_BIN = 'D:/rbullins/Data/M341necab1_Chr2/20210819ephys/M341_20210819_1100_g0/M341_20210819_1100_g0_t0.nidq.bin';
@@ -134,7 +118,7 @@ for isub = 1%:length(animals)
             analogSampRate = str2double(analogMeta_text(bar_sr+(0:7))); %i think
             % Set camera sampling rate convert number
             cameraSampRate = 2; %(500 Hz)
-            if useJAABA
+            if useJAABA % change this section to just input Jay's way of JAABA (much simpler than this haha)
                 %% Load classifier data (hand lift, grab, etc)
                 % find how many trials there are
                 TRK_SIDE =  [RAWDATA_BASEPATH 'Data/' SUB 'necab1_Chr2/' EXPER_SESSION 'movies/trk/side/'];
@@ -213,7 +197,7 @@ for isub = 1%:length(animals)
             startFrames = [movStrt.nbase movStrt.npert movStrt.nwash];
             endFrames = [movEnd.nbase movEnd.npert movEnd.nwash];
             selectIdx = [movIdx.nbase movIdx.npert movIdx.nwash];
-            for iclassifier = 1:length(classifiers)
+            for iclassifier = 1%:length(classifiers)
                 CLASS = classifiers{iclassifier};
                 if useJAABA
                     startFrames = zeros(1,length(selectIdx));
@@ -314,10 +298,62 @@ for isub = 1%:length(animals)
                 columnNumCells = 6;
                 rowsNumCells = ceil(totalNumCells/columnNumCells);
 
+                    trialIdxs = eval(sprintf('%s_%s_%sTrials',SUB,EXPER_SESSION,EXPER_COND));
+                    base.trialIdxs = trialIdxs.nbase;
+                    pert.trialIdxs = trialIdxs.npert;
+                    wash.trialIdxs = trialIdxs.nwash;
+                    baseSuccessIdx = find(trialIdxs.trialScore(base.trialIdxs) == 1);
+                    pertSuccessIdx = find(trialIdxs.trialScore(pert.trialIdxs) == 1);
+                    washSuccessIdx = find(trialIdxs.trialScore(wash.trialIdxs) == 1);
+                    allSuccessTrials = [baseSuccessIdx pertSuccessIdx washSuccessIdx];
+
+                       % no success trials
+                    baseNoSuccessIdx = find(trialIdxs.trialScore(base.trialIdxs) == 0);
+                    pertNoSuccessIdx = find(trialIdxs.trialScore(pert.trialIdxs) == 0);
+                    washNoSuccessIdx = find(trialIdxs.trialScore(wash.trialIdxs) == 0);
+                    allNoSuccessTrials = [baseNoSuccessIdx pertNoSuccessIdx washNoSuccessIdx];
 
                 if runHeatMaps
+                    runEachNeuron = 0;
+                    
+                    if runEachNeuron
                     %% plot heatmaps of each trial
-                    % for size of subplot
+                   
+                    figure;
+                    for n = 1:length(spikes)
+                        tmp=squeeze(z_norm_lift_ctx(n,allSuccessTrials,:));
+                        subplot(rowsNumCells,columnNumCells,n);
+                        hold on
+                        imagesc(tmp)
+                        
+                        sgtitle(strcat('neuron:',num2str(n)));
+                        yline(length(baseSuccessIdx)+1,'--w');
+                        yline(length(baseSuccessIdx)+length(pertSuccessIdx)+1,'--w');
+                        xlabel('Time')
+                        xticks([0 500 1000 1500 2000 2500]);
+                        xticklabels({'-500','0','500','1000','1500','2000','2500'});
+                    end
+                    sgtitle({[SUB ' ' EXPER_SESSION ': ' EXPER_COND ' success trials firing rates'], ['Aligned to ' CLASS]});
+                    savefig([BASEPATH 'Figures/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_FR_SuccessOnly' CLASS '.fig']);
+                    figure;
+                    % no success trials
+                    
+                    for n = 1:length(spikes)
+                        tmp=squeeze(z_norm_lift_ctx(n,allNoSuccessTrials,:));
+                        subplot(rowsNumCells,columnNumCells,n);
+                        hold on
+                        imagesc(tmp)
+                        sgtitle(strcat('neuron:',num2str(n)));
+                        yline(length(baseNoSuccessIdx)+1,'--w');
+                        yline(length(baseNoSuccessIdx)+length(pertNoSuccessIdx)+1,'--w');
+                        xlabel('Time')
+                        xticks([0 500 1000 1500 2000 2500]);
+                        xticklabels({'-500','0','500','1000','1500','2000','2500'});
+                    end
+                    sgtitle({[SUB ' ' EXPER_SESSION ': ' EXPER_COND ' no success trials firing rates'], ['Aligned to ' CLASS]});
+                    savefig([BASEPATH 'Figures/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_FR_NoSuccess' CLASS '.fig']);
+                    % all cells
+                    figure;
                     for n = 1:length(spikes)
                         tmp=squeeze(z_norm_lift_ctx(n,:,:));
                         subplot(rowsNumCells,columnNumCells,n);
@@ -332,6 +368,7 @@ for isub = 1%:length(animals)
                     end
                     sgtitle({[SUB ' ' EXPER_SESSION ': ' EXPER_COND ' session firing rates'], ['Aligned to ' CLASS]});
                     savefig([BASEPATH 'Figures/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_FR_' CLASS '.fig']);
+                    end
                     %% Plot heatmap of all neurons
                     figure;
                     heatMapAll = zeros(length(spikes),size(z_norm_lift_ctx,3));
@@ -341,12 +378,49 @@ for isub = 1%:length(animals)
                         heatMapAll(ineuron,:) = thisNeuron;
                     end
                     imagesc(heatMapAll);
+                    colorbar;
+                 %       caxis([-0.6205 1.7678]);
                     xlabel('Time')
                     ylabel('Neuron')
                     xticks([0 500 1000 1500 2000 2500]);
                     xticklabels({'-500','0','500','1000','1500','2000','2500'});
                     sgtitle({[SUB ' ' EXPER_SESSION ': ' EXPER_COND ' session firing rates'], ['Aligned to ' CLASS]});
                     savefig([BASEPATH 'Figures/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_FR_Avg_' CLASS '.fig']);
+                    % success trials only
+                     figure;
+                    heatMapAll = zeros(length(spikes),size(z_norm_lift_ctx,3));
+                    for ineuron = 1:length(spikes)
+                        tmp = squeeze(z_norm_lift_ctx(ineuron,allSuccessTrials,:));
+                        thisNeuron = mean(tmp);
+                        heatMapAll(ineuron,:) = thisNeuron;
+                    end
+                    imagesc(heatMapAll);
+                    colorbar;
+                    %    caxis([-0.6205 1.7678]);
+                    xlabel('Time')
+                    ylabel('Neuron')
+                    xticks([0 500 1000 1500 2000 2500]);
+                    xticklabels({'-500','0','500','1000','1500','2000','2500'});
+                    sgtitle({[SUB ' ' EXPER_SESSION ': ' EXPER_COND ' success trials firing rates'], ['Aligned to ' CLASS]});
+                    savefig([BASEPATH 'Figures/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_FR_Avg_SuccessOnly' CLASS '.fig']);
+                    % no success trials only
+                     figure;
+                    heatMapAll = zeros(length(spikes),size(z_norm_lift_ctx,3));
+                    for ineuron = 1:length(spikes)
+                        tmp = squeeze(z_norm_lift_ctx(ineuron,allNoSuccessTrials,:));
+                        thisNeuron = mean(tmp);
+                        heatMapAll(ineuron,:) = thisNeuron;
+                    end
+                    imagesc(heatMapAll);
+                    colorbar;
+                 %   caxis([-0.6205 1.7678]);
+                    xlabel('Time')
+                    ylabel('Neuron')
+                    xticks([0 500 1000 1500 2000 2500]);
+                    xticklabels({'-500','0','500','1000','1500','2000','2500'});
+                    sgtitle({[SUB ' ' EXPER_SESSION ': ' EXPER_COND ' No success trials firing rates'], ['Aligned to ' CLASS]});
+                    savefig([BASEPATH 'Figures/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_FR_Avg_NoSuccessOnly' CLASS '.fig'])
+
                 end
                 if runPCA
                     %% perform PCA analysis
@@ -402,9 +476,10 @@ for isub = 1%:length(animals)
                     peakISI.ms(1,ineuron)= hgram.BinEdges(maxPeak); %in ms
 
                 end
+
                 xlabel('Count');
                 ylabel('ISI (ms)');
-                sgtitle({'Interspike Intervals',[SUB '-' EXPER_SESSION '-' EXPER_COND]});
+                sgtitle({'Interspike Intervals' ,[SUB '-' EXPER_SESSION '-' EXPER_COND]});
 
                 savefig([BASEPATH 'Figures/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_ISI.fig']);
 
@@ -414,7 +489,9 @@ for isub = 1%:length(animals)
                 xlabel('ISI (ms)');
                 ylabel('Count');
                 box off;
-                sgtitle({'Interspike Intervals Peaks',[SUB '-' EXPER_SESSION '-' EXPER_COND]});
+                medianPeak = median(peakISI.ms);
+                meanPeak = mean(peakISI.ms);
+                sgtitle({['ISI Peaks, Median=' num2str(medianPeak) '(' num2str(1000/medianPeak) 'Hz)' ' Mean=' num2str(meanPeak) '(' num2str(1000/meanPeak) 'Hz)'],[SUB '-' EXPER_SESSION '-' EXPER_COND]});
 
                 savefig([BASEPATH 'Figures/' SUB '/Neural/' SUB '_' EXPER_SESSION '_' EXPER_COND '_ISI_Peaks.fig']);
             end
@@ -510,48 +587,48 @@ for isub = 1%:length(animals)
                 lfpStruct.data = bandpass(lfpStruct.data,[58 62],1250);
                 totalSecRec = length(lfpStruct.data)/1250;
                 lfpStruct.timestamps = (0:1/Fs:totalSecRec-(1/Fs));
-%                 % Get power of data
-%                 doSplitLFP = 0;
-%                 if ~doSplitLFP
-%                     [powS1] = getPowerSpectrum(lfpStruct, 'doIRASA', false,'doPlot', false);
-%                 elseif doSplitLFP
-%                     minutes = 5;
-%                     timeMin = 1250*60*minutes;
-%                     % Sleep 1
-%                     [powS1] = makePowerspec_AvgChunk_Vector(basePath, timeMin, lfp);
-%                 end
+                %                 % Get power of data
+                %                 doSplitLFP = 0;
+                %                 if ~doSplitLFP
+                %                     [powS1] = getPowerSpectrum(lfpStruct, 'doIRASA', false,'doPlot', false);
+                %                 elseif doSplitLFP
+                %                     minutes = 5;
+                %                     timeMin = 1250*60*minutes;
+                %                     % Sleep 1
+                %                     [powS1] = makePowerspec_AvgChunk_Vector(basePath, timeMin, lfp);
+                %                 end
                 % Plot Power
-                                figure;
-                                plot(freq_axis,Pow_spec2);
-                                legend({'Control'});
-                                legend boxoff;
-                                title('Powerspectrum');
-                                xlabel('Frequency (Hz)');
-                                ylabel('Power (mV)');
-                                % Chunk lfp and Take out the fractals
-                                % take out fractals
-%                                 if ~doSplitLFP
-                                    time30min = 30*(60*1250);
-                                    lfp_channel = 1;
-                                    specS1 = amri_sig_fractal(lfpStruct.data(lfp_channel,1:time30min), 1250,'detrend',1,'frange', [1 150]);
-%                                 elseif doSplitLFP
-%                                     %make movmean 1
-%                                     movmean_win = 1;
-%                                     [specS1_freq, specS1_osci] = chunkLFP_takeOutFractals(lfp_VR);
-%                                     specS1.freq = mean(specS1_freq);
-%                                     specS1.osci = mean(specS1_osci);
-%                                 end
-                                figure;
-                                movmean_win = 1000;
-                                plot(specS1.freq,movmean(specS1.osci,movmean_win));
-                                hold on ;
-                                title('Powerspectrum for Sleep Sessions:No fractals');
-                                xlabel('Frequency (Hz)');
-                                ylabel('Power (mV)');
-                                % Make IRASA struct IRASA
-                                IRASA.specS1 = specS1;
+                figure;
+                plot(freq_axis,Pow_spec2);
+                legend({'Control'});
+                legend boxoff;
+                title('Powerspectrum');
+                xlabel('Frequency (Hz)');
+                ylabel('Power (mV)');
+                % Chunk lfp and Take out the fractals
+                % take out fractals
+                %                                 if ~doSplitLFP
+                time30min = 30*(60*1250);
+                lfp_channel = 1;
+                specS1 = amri_sig_fractal(lfpStruct.data(lfp_channel,1:time30min), 1250,'detrend',1,'frange', [1 150]);
+                %                                 elseif doSplitLFP
+                %                                     %make movmean 1
+                %                                     movmean_win = 1;
+                %                                     [specS1_freq, specS1_osci] = chunkLFP_takeOutFractals(lfp_VR);
+                %                                     specS1.freq = mean(specS1_freq);
+                %                                     specS1.osci = mean(specS1_osci);
+                %                                 end
+                figure;
+                movmean_win = 1000;
+                plot(specS1.freq,movmean(specS1.osci,movmean_win));
+                hold on ;
+                title('Powerspectrum for Sleep Sessions:No fractals');
+                xlabel('Frequency (Hz)');
+                ylabel('Power (mV)');
+                % Make IRASA struct IRASA
+                IRASA.specS1 = specS1;
             end
-         
+
         end % experimental session
     end % experimental condition
     % Plot LFP harm vs control for this animal

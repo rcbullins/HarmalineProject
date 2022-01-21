@@ -1,4 +1,4 @@
-%Behavioral_Tracking_Script
+%Behavioral_Tracking_Script (OLD JAABA WAY) see VideoCombiningPrep
 % PURPOSE
 %   Run this script to prep data directories for JAABA.
 %   This will find all experimental trk files and make copies of them in a
@@ -128,4 +128,4 @@ end %sub
 %% To Run JAABA
 %StartJAABA;
 
-
+%   D:\rbullins\JAABA_behaviors
